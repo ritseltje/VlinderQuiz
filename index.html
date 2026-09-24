@@ -1,0 +1,922 @@
+<!doctype html>
+<html lang="nl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Vlinders determineren</title>
+<meta name="description" content="Oefen het herkennen van de Nederlandse dagvlinders: mannetjes en vrouwtjes, boven- en onderzijde.">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🦋</text></svg>">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:ital,wght@0,400;0,700;1,400&family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,600;1,6..72,400;1,6..72,500&display=swap" rel="stylesheet">
+<style>
+:root{
+  --paper:#EDF0E8;--card:#F8FAF5;--ink:#1F2A22;--muted:#56655A;--line:#C6CFC0;
+  --accent:#6D3F74;--accent-soft:#E7DCE9;--on-accent:#FFFFFF;
+  --ok:#2E6A3B;--ok-soft:#DAEADB;--bad:#A03A29;--bad-soft:#F3DCD6;
+  --stage:#1B221D;
+  --serif:'Newsreader',Georgia,'Times New Roman',serif;
+  --sans:'Atkinson Hyperlegible',system-ui,-apple-system,'Segoe UI',Roboto,sans-serif;
+  color-scheme:light;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --paper:#151B17;--card:#1D2520;--ink:#E4EAE1;--muted:#9AA89D;--line:#34413A;
+  --accent:#C9A2D0;--accent-soft:#3A2B3D;--on-accent:#1A1320;
+  --ok:#86C592;--ok-soft:#203326;--bad:#EC937F;--bad-soft:#3A221D;--stage:#0E120F;color-scheme:dark;}}
+:root[data-theme="dark"]{
+  --paper:#151B17;--card:#1D2520;--ink:#E4EAE1;--muted:#9AA89D;--line:#34413A;
+  --accent:#C9A2D0;--accent-soft:#3A2B3D;--on-accent:#1A1320;
+  --ok:#86C592;--ok-soft:#203326;--bad:#EC937F;--bad-soft:#3A221D;--stage:#0E120F;color-scheme:dark;}
+:root{box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+*,*::before,*::after{box-sizing:inherit}
+html{background:var(--paper)}
+body{margin:0;background:var(--paper);color:var(--ink);font:17px/1.5 var(--sans)}
+a{color:var(--accent)}
+button{font:inherit;color:inherit}
+:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
+[hidden]{display:none!important}
+.wrap{max-width:1180px;margin:0 auto;padding:0 1.25rem}
+
+/* header */
+.top{border-bottom:1px solid var(--line)}
+.top .wrap{display:flex;flex-wrap:wrap;align-items:flex-end;justify-content:space-between;gap:.75rem 2rem;padding-top:1.4rem}
+.brand h1{font-family:var(--serif);font-weight:400;font-size:clamp(1.9rem,4vw,2.7rem);line-height:1.05;margin:0;letter-spacing:-.01em}
+.brand p{margin:.3rem 0 .9rem;color:var(--muted);font-size:.95rem}
+.tabs{display:flex;gap:.25rem;overflow-x:auto}
+.tab{background:none;border:0;border-bottom:3px solid transparent;padding:.6rem .8rem .7rem;cursor:pointer;color:var(--muted);white-space:nowrap}
+.tab[aria-selected="true"]{color:var(--ink);border-bottom-color:var(--accent);font-weight:700}
+main{padding:1.5rem 0 3rem}
+
+/* generic */
+.btn{display:inline-flex;align-items:center;gap:.4rem;padding:.65rem 1.1rem;border-radius:6px;border:1px solid var(--ink);background:transparent;cursor:pointer}
+.btn.primary{background:var(--accent);border-color:var(--accent);color:var(--on-accent);font-weight:700}
+.btn:disabled{opacity:.45;cursor:not-allowed}
+.linkbtn{background:none;border:0;padding:0;color:var(--accent);text-decoration:underline;cursor:pointer}
+.muted{color:var(--muted)}
+.small{font-size:.88rem}
+.sci{font-family:var(--serif);font-style:italic}
+
+/* setup */
+.setup{display:grid;grid-template-columns:repeat(auto-fit,minmax(16rem,1fr));gap:1rem 2rem;max-width:62rem}
+fieldset{border:0;border-top:1px solid var(--line);margin:0;padding:.8rem 0 0}
+legend{font-family:var(--serif);font-size:1.2rem;padding:0 .4rem 0 0}
+.check{display:flex;gap:.55rem;align-items:flex-start;padding:.2rem 0;cursor:pointer}
+.check input{margin-top:.3rem;accent-color:var(--accent)}
+.check small{display:block;color:var(--muted)}
+.setup select{font:inherit;padding:.4rem .5rem;border:1px solid var(--line);border-radius:6px;background:var(--card);color:var(--ink)}
+.startbar{display:flex;flex-wrap:wrap;align-items:center;gap:1rem;margin-top:1.6rem;padding-top:1.2rem;border-top:1px solid var(--line)}
+.intro{font-family:var(--serif);font-size:1.2rem;line-height:1.55;max-width:44rem;margin:0 0 1.6rem}
+
+/* game */
+.game{display:grid;grid-template-columns:minmax(0,1.55fr) minmax(17rem,1fr);gap:1.5rem;align-items:start}
+@media (max-width:840px){.game{grid-template-columns:1fr}}
+.progress{display:flex;gap:1.25rem;align-items:baseline;margin-bottom:.6rem;color:var(--muted)}
+.progress .sp{margin-left:auto}
+.photo{margin:0;background:var(--stage);border-radius:6px;aspect-ratio:4/3;display:grid;place-items:center;overflow:hidden;position:relative}
+.photo img{max-width:100%;max-height:100%;object-fit:contain;cursor:zoom-in;transition:opacity .2s}
+.photo img.loading{opacity:0}
+.photo .side{position:absolute;left:.7rem;top:.7rem;background:rgba(248,250,245,.92);color:#1F2A22;padding:.2rem .6rem;border-radius:4px;font-size:.9rem;font-weight:700}
+.photo .spinner{position:absolute;color:#C6CFC0;font-size:.95rem}
+.prompt{font-family:var(--serif);font-size:1.35rem;margin:0 0 .8rem}
+.options{display:grid;gap:.5rem}
+.opt{display:flex;gap:.8rem;align-items:baseline;width:100%;text-align:left;padding:.65rem .9rem;background:var(--card);border:1px solid var(--line);border-radius:6px;cursor:pointer}
+.opt:hover:not(:disabled){border-color:var(--ink)}
+.opt:disabled{cursor:default}
+.opt .k{color:var(--muted);font-size:.8rem;min-width:1ch}
+.opt .nl{font-family:var(--serif);font-size:1.15rem;line-height:1.25}
+.opt .sci{display:block;color:var(--muted);font-size:.92rem}
+.opt.is-right{background:var(--ok-soft);border-color:var(--ok)}
+.opt.is-wrong{background:var(--bad-soft);border-color:var(--bad)}
+.opt.dim{opacity:.55}
+.typeform{display:flex;gap:.5rem}
+.typeform input{flex:1;min-width:0;font:inherit;padding:.6rem .7rem;border:1px solid var(--line);border-radius:6px;background:var(--card);color:var(--ink)}
+.sexrow{display:grid;grid-template-columns:1fr 1fr;gap:.5rem}
+.sexrow .opt{justify-content:center;font-size:1.1rem}
+.verdict{font-family:var(--serif);font-size:1.5rem;margin:1.1rem 0 .2rem}
+.verdict.ok{color:var(--ok)}
+.verdict.bad{color:var(--bad)}
+.label{font-family:var(--serif);background:var(--card);border:1px solid var(--ink);outline:1px solid var(--ink);outline-offset:3px;padding:.85rem 1.1rem;margin:1.1rem 4px 1rem;max-width:24rem}
+.label .l-nl{font-size:1.45rem;font-weight:600;line-height:1.2}
+.label .l-sci{font-style:italic;font-size:1.08rem}
+.label .l-meta{margin-top:.45rem}
+.label .l-st{color:var(--muted);font-size:.92rem}
+.credit{font-size:.82rem;color:var(--muted);margin:.2rem 0 1rem;overflow-wrap:anywhere}
+.actions{display:flex;flex-wrap:wrap;gap:1rem;align-items:center}
+.fix{margin-top:1rem;padding:.8rem;border:1px dashed var(--line);border-radius:6px}
+.fix p{margin:0 0 .5rem}
+
+/* relabel controls */
+.rl{display:flex;flex-wrap:wrap;gap:.35rem;margin-top:.35rem}
+.seg{display:inline-flex;border:1px solid var(--line);border-radius:5px;overflow:hidden}
+.segb{background:var(--card);border:0;border-right:1px solid var(--line);padding:.2rem .5rem;font-size:.82rem;cursor:pointer}
+.segb:last-child{border-right:0}
+.segb[aria-pressed="true"]{background:var(--accent);color:var(--on-accent)}
+.segb.hide{border:1px solid var(--line);border-radius:5px}
+
+/* end */
+.endscore{font-family:var(--serif);font-size:clamp(2.2rem,6vw,3.4rem);line-height:1.1;margin:0 0 .3rem}
+.mist{list-style:none;padding:0;margin:1.2rem 0;display:grid;gap:.6rem;max-width:44rem}
+.mist li{display:flex;gap:.8rem;align-items:center;background:var(--card);border:1px solid var(--line);border-radius:6px;padding:.5rem}
+.mist img{width:96px;height:72px;object-fit:cover;border-radius:4px;background:var(--stage);flex:none}
+
+/* species tab */
+.sp-layout{display:grid;grid-template-columns:minmax(16rem,22rem) minmax(0,1fr);gap:1.5rem;align-items:start}
+@media (max-width:840px){.sp-layout{grid-template-columns:1fr}}
+.sp-tools{display:flex;flex-wrap:wrap;gap:.6rem;align-items:center;margin-bottom:1rem}
+.sp-list{max-height:75vh;overflow:auto;border:1px solid var(--line);border-radius:6px;background:var(--card)}
+@media (max-width:840px){.sp-list{max-height:40vh}}
+.sp-list h3{font-family:var(--serif);font-weight:400;font-size:1rem;color:var(--muted);margin:0;padding:.6rem .8rem .2rem;position:sticky;top:0;background:var(--card)}
+.sp-item{display:grid;grid-template-columns:1fr auto;gap:.2rem .6rem;width:100%;text-align:left;background:none;border:0;border-top:1px solid var(--line);padding:.45rem .8rem;cursor:pointer}
+.sp-item[aria-current="true"]{background:var(--accent-soft)}
+.sp-item .nl{font-family:var(--serif);font-size:1.05rem}
+.cnt{display:flex;gap:.2rem;font-size:.75rem;font-variant-numeric:tabular-nums}
+.cnt span{min-width:1.9rem;text-align:center;border-radius:3px;padding:0 .15rem;background:var(--paper)}
+.cnt span.zero{background:var(--bad-soft);color:var(--bad)}
+.legend{font-size:.82rem;color:var(--muted);margin:.4rem 0 .8rem}
+.search{font:inherit;padding:.45rem .6rem;border:1px solid var(--line);border-radius:6px;background:var(--card);color:var(--ink);width:100%}
+.detail h2{font-family:var(--serif);font-weight:400;font-size:2rem;margin:0;line-height:1.1}
+.detail h3{font-family:var(--serif);font-weight:400;font-size:1.25rem;margin:1.6rem 0 .5rem;padding-top:.6rem;border-top:1px solid var(--line)}
+.thumbs{display:grid;grid-template-columns:repeat(auto-fill,minmax(190px,1fr));gap:.9rem}
+.thumb{margin:0}
+.thumb img{width:100%;aspect-ratio:4/3;object-fit:cover;border-radius:4px;background:var(--stage);display:block;cursor:zoom-in}
+.thumb figcaption{font-size:.75rem;color:var(--muted);margin-top:.2rem;overflow-wrap:anywhere}
+
+/* stats */
+table{border-collapse:collapse;width:100%;max-width:60rem}
+th,td{text-align:left;padding:.4rem .6rem;border-bottom:1px solid var(--line);vertical-align:top}
+th{font-weight:700;font-size:.9rem;color:var(--muted)}
+td.num{font-variant-numeric:tabular-nums}
+.tablewrap{overflow-x:auto}
+
+/* lightbox */
+.lightbox{position:fixed;inset:0;background:rgba(10,14,11,.94);display:grid;place-items:center;z-index:50;padding:1rem;cursor:zoom-out}
+.lightbox img{max-width:100%;max-height:100%;object-fit:contain}
+
+footer{border-top:1px solid var(--line);padding:1.2rem 0 2rem;color:var(--muted);font-size:.85rem}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+</head>
+<body>
+<header class="top">
+  <div class="wrap">
+    <div class="brand">
+      <h1>Vlinders determineren</h1>
+      <p id="loadStatus">Foto's laden…</p>
+    </div>
+    <nav class="tabs" role="tablist" aria-label="Onderdelen">
+      <button class="tab" role="tab" data-tab="play" aria-selected="true">Oefenen</button>
+      <button class="tab" role="tab" data-tab="species" aria-selected="false">Soorten en foto's</button>
+      <button class="tab" role="tab" data-tab="stats" aria-selected="false">Voortgang</button>
+    </nav>
+  </div>
+</header>
+
+<main class="wrap">
+  <!-- OEFENEN -->
+  <section id="tab-play">
+    <div id="setup">
+      <p class="intro">Je krijgt een foto van een dagvlinder en kiest de soort. Bij soorten waar mannetje en vrouwtje duidelijk verschillen, raad je daarna ook de sekse. Soorten die je vaak mist, komen vaker terug.</p>
+      <form id="setupForm" class="setup" onsubmit="return false">
+        <fieldset>
+          <legend>Welke soorten</legend>
+          <label class="check"><input type="checkbox" name="st" value="stand" checked><span>Standvlinders</span></label>
+          <label class="check"><input type="checkbox" name="st" value="trek" checked><span>Trekvlinders</span></label>
+          <label class="check"><input type="checkbox" name="st" value="zeldzaam" checked><span>Zeer zeldzaam of herontdekt</span></label>
+          <label class="check"><input type="checkbox" name="st" value="zwerver"><span>Zwervers en dwaalgasten</span></label>
+          <label class="check"><input type="checkbox" name="st" value="verdwenen"><span>Uit Nederland verdwenen</span></label>
+        </fieldset>
+        <fieldset>
+          <legend>Families</legend>
+          <div id="famChecks"></div>
+        </fieldset>
+        <fieldset>
+          <legend>Foto's</legend>
+          <label class="check"><input type="radio" name="side" value="all" checked><span>Boven- en onderzijde</span></label>
+          <label class="check"><input type="radio" name="side" value="up"><span>Alleen bovenzijde</span></label>
+          <label class="check"><input type="radio" name="side" value="down"><span>Alleen onderzijde</span></label>
+          <label class="check"><input type="checkbox" name="unk" checked><span>Ook foto's waarvan de zijde niet vermeld is<small>Geldt alleen bij "boven- en onderzijde".</small></span></label>
+        </fieldset>
+        <fieldset>
+          <legend>Sekse</legend>
+          <label class="check"><input type="radio" name="sex" value="all" checked><span>Mannetjes en vrouwtjes</span></label>
+          <label class="check"><input type="radio" name="sex" value="m"><span>Alleen mannetjes</span></label>
+          <label class="check"><input type="radio" name="sex" value="f"><span>Alleen vrouwtjes</span></label>
+          <label class="check"><input type="checkbox" name="askSex" checked><span>Sekse ook raden<small>Bij soorten met duidelijk verschil en een foto met bekende sekse.</small></span></label>
+        </fieldset>
+        <fieldset>
+          <legend>Antwoorden</legend>
+          <label class="check"><input type="radio" name="mode" value="easy"><span>Meerkeuze uit 4, willekeurige soorten</span></label>
+          <label class="check"><input type="radio" name="mode" value="hard" checked><span>Meerkeuze uit 6, soorten die erop lijken</span></label>
+          <label class="check"><input type="radio" name="mode" value="type"><span>Zelf de naam typen</span></label>
+          <label class="check"><input type="checkbox" name="sci" checked><span>Wetenschappelijke namen tonen</span></label>
+        </fieldset>
+        <fieldset>
+          <legend>Lengte</legend>
+          <select name="rounds" aria-label="Aantal vragen">
+            <option value="10">10 vragen</option>
+            <option value="20" selected>20 vragen</option>
+            <option value="50">50 vragen</option>
+            <option value="0">Doorgaan tot ik stop</option>
+          </select>
+        </fieldset>
+      </form>
+      <div class="startbar">
+        <button class="btn primary" id="startBtn" type="button">Start</button>
+        <span id="poolInfo" class="muted"></span>
+      </div>
+    </div>
+
+    <div id="game" hidden>
+      <div class="game">
+        <div>
+          <div class="progress"><span id="qnum"></span><span id="qscore"></span><span class="sp"><button class="linkbtn" id="stopBtn" type="button">Stoppen</button></span></div>
+          <figure class="photo">
+            <span class="spinner" id="spinner">Foto laden…</span>
+            <img id="qimg" alt="Vlinder om te determineren" class="loading">
+            <span class="side" id="qside"></span>
+          </figure>
+          <p class="small muted">Klik op de foto om te vergroten.</p>
+        </div>
+        <div>
+          <div id="askSpecies">
+            <p class="prompt">Welke soort is dit?</p>
+            <div id="options" class="options"></div>
+            <form id="typeForm" class="typeform" hidden>
+              <input id="typeInput" list="nameList" autocomplete="off" placeholder="Nederlandse of wetenschappelijke naam" aria-label="Naam van de soort">
+              <button class="btn primary" type="submit">Controleer</button>
+            </form>
+          </div>
+          <div id="askSex" hidden>
+            <p class="prompt" style="margin-top:1.2rem">Mannetje of vrouwtje?</p>
+            <div class="sexrow">
+              <button class="opt" type="button" data-sex="m">♂ Mannetje</button>
+              <button class="opt" type="button" data-sex="f">♀ Vrouwtje</button>
+            </div>
+          </div>
+          <div id="reveal" hidden></div>
+          <p id="waitMsg" class="muted" hidden>Er zijn nog geen foto's die bij je instellingen passen. De foto's worden nog geladen; de vraag verschijnt vanzelf.</p>
+        </div>
+      </div>
+    </div>
+
+    <div id="end" hidden></div>
+  </section>
+
+  <!-- SOORTEN -->
+  <section id="tab-species" hidden>
+    <p class="intro" style="font-size:1.05rem">Sekse en zijde worden afgeleid uit de bestandsnaam, beschrijving en categorieën op Wikimedia Commons. Dat gaat niet altijd goed. Corrigeer hier een label of verberg een foto; je correcties gelden meteen in het spel. Exporteer ze als <code>curated.json</code> en zet dat bestand naast <code>index.html</code> in je repository, dan krijgt iedereen die de pagina opent ze ook.</p>
+    <div class="sp-tools">
+      <button class="btn" type="button" id="exportBtn">Correcties exporteren</button>
+      <label class="btn" style="cursor:pointer">Correcties importeren<input type="file" id="importInput" accept="application/json,.json" hidden></label>
+      <span id="overInfo" class="muted small"></span>
+    </div>
+    <div class="sp-layout">
+      <div>
+        <input class="search" id="spSearch" type="search" placeholder="Zoek soort" aria-label="Zoek soort">
+        <p class="legend">Aantal foto's: ♂↑ mannetje bovenzijde, ♂↓ mannetje onderzijde, ♀↑ en ♀↓ idem voor vrouwtjes, "ov" overig. Rood betekent nog geen foto.</p>
+        <div class="sp-list" id="spList"></div>
+      </div>
+      <div class="detail" id="spDetail"><p class="muted">Kies een soort om de foto's te bekijken en te corrigeren.</p></div>
+    </div>
+  </section>
+
+  <!-- VOORTGANG -->
+  <section id="tab-stats" hidden></section>
+</main>
+
+<footer>
+  <div class="wrap">
+    Foto's: Wikimedia Commons, met naamsvermelding en licentie per foto. Soortenlijst: Nederlandse dagvlinders inclusief trekvlinders, zwervers en verdwenen soorten.
+  </div>
+</footer>
+
+<datalist id="nameList"></datalist>
+
+<script>
+(function(){
+'use strict';
+
+/* ---------- Soortenlijst ----------
+   [Nederlandse naam, wetenschappelijke naam, familie, lijkt-op-groep, status, sekse duidelijk verschillend (1/0), synoniemen] */
+const RAW = [
+ ['Bont dikkopje','Carterocephalus palaemon','hes','dik-bont','stand',0],
+ ['Spiegeldikkopje','Heteropterus morpheus','hes','dik-bont','stand',0],
+ ['Geelsprietdikkopje','Thymelicus sylvestris','hes','dik-oranje','stand',1],
+ ['Zwartsprietdikkopje','Thymelicus lineola','hes','dik-oranje','stand',1],
+ ['Kommavlinder','Hesperia comma','hes','dik-oranje','stand',1],
+ ['Groot dikkopje','Ochlodes sylvanus','hes','dik-oranje','stand',1],
+ ['Aardbeivlinder','Pyrgus malvae','hes','dik-grijs','stand',0],
+ ['Bruin dikkopje','Erynnis tages','hes','dik-grijs','zeldzaam',0],
+ ['Kaasjeskruiddikkopje','Carcharodus alceae','hes','dik-grijs','zwerver',0],
+ ['Koninginnenpage','Papilio machaon','pap','page','stand',0],
+ ['Koningspage','Iphiclides podalirius','pap','page','zwerver',0],
+ ['Boswitje','Leptidea sinapis','pie','wit','verdwenen',0],
+ ['Oranjetipje','Anthocharis cardamines','pie','wit','stand',1],
+ ['Groot geaderd witje','Aporia crataegi','pie','wit','verdwenen',0],
+ ['Groot koolwitje','Pieris brassicae','pie','wit','stand',1],
+ ['Klein koolwitje','Pieris rapae','pie','wit','stand',1],
+ ['Klein geaderd witje','Pieris napi','pie','wit','stand',1],
+ ['Resedawitje','Pontia edusa','pie','wit','trek',1,['Pontia daplidice']],
+ ['Oranje luzernevlinder','Colias crocea','pie','geel','trek',1],
+ ['Gele luzernevlinder','Colias hyale','pie','geel','trek',1],
+ ['Zuidelijke luzernevlinder','Colias alfacariensis','pie','geel','zwerver',1],
+ ['Citroenvlinder','Gonepteryx rhamni','pie','geel','stand',1],
+ ['Sleutelbloemvlinder','Hamearis lucina','rio','parel-klein','verdwenen',0],
+ ['Kleine vuurvlinder','Lycaena phlaeas','lyc','vuur','stand',0],
+ ['Grote vuurvlinder','Lycaena dispar','lyc','vuur','stand',1],
+ ['Bruine vuurvlinder','Lycaena tityrus','lyc','vuur','stand',1],
+ ['Morgenrood','Lycaena virgaureae','lyc','vuur','verdwenen',1],
+ ['Rode vuurvlinder','Lycaena hippothoe','lyc','vuur','verdwenen',1],
+ ['Groentje','Callophrys rubi','lyc','klpage','stand',0],
+ ['Sleedoornpage','Thecla betulae','lyc','klpage','stand',1],
+ ['Eikenpage','Favonius quercus','lyc','klpage','stand',1,['Neozephyrus quercus','Quercusia quercus']],
+ ['Iepenpage','Satyrium w-album','lyc','klpage','stand',0],
+ ['Bruine eikenpage','Satyrium ilicis','lyc','klpage','zeldzaam',0],
+ ['Pruimenpage','Satyrium pruni','lyc','klpage','zeldzaam',0],
+ ['Boomblauwtje','Celastrina argiolus','lyc','blauw','stand',1],
+ ['Dwergblauwtje','Cupido minimus','lyc','blauw','verdwenen',1],
+ ['Staartblauwtje','Cupido argiades','lyc','blauw','stand',1,['Everes argiades']],
+ ['Tijgerblauwtje','Lampides boeticus','lyc','blauw','trek',1],
+ ['Geraniumblauwtje','Cacyreus marshalli','lyc','blauw','zwerver',0],
+ ['Heideblauwtje','Plebejus argus','lyc','blauw','stand',1],
+ ['Vals heideblauwtje','Plebejus idas','lyc','blauw','stand',1],
+ ['Kroonkruidblauwtje','Plebejus argyrognomon','lyc','blauw','zeldzaam',1],
+ ['Bruin blauwtje','Aricia agestis','lyc','blauw','stand',0],
+ ['Icarusblauwtje','Polyommatus icarus','lyc','blauw','stand',1],
+ ['Klaverblauwtje','Cyaniris semiargus','lyc','blauw','zeldzaam',1,['Polyommatus semiargus']],
+ ['Bleek blauwtje','Lysandra coridon','lyc','blauw','verdwenen',1,['Polyommatus coridon']],
+ ['Adonisblauwtje','Lysandra bellargus','lyc','blauw','verdwenen',1,['Polyommatus bellargus']],
+ ['Gentiaanblauwtje','Phengaris alcon','lyc','blauw-gevl','stand',1,['Maculinea alcon']],
+ ['Pimpernelblauwtje','Phengaris teleius','lyc','blauw-gevl','zeldzaam',0,['Maculinea teleius']],
+ ['Donker pimpernelblauwtje','Phengaris nausithous','lyc','blauw-gevl','zeldzaam',1,['Maculinea nausithous']],
+ ['Tijmblauwtje','Phengaris arion','lyc','blauw-gevl','verdwenen',0,['Maculinea arion']],
+ ['Grote ijsvogelvlinder','Limenitis populi','nym','ijsvogel','verdwenen',1],
+ ['Kleine ijsvogelvlinder','Limenitis camilla','nym','ijsvogel','stand',0],
+ ['Grote weerschijnvlinder','Apatura iris','nym','ijsvogel','stand',1],
+ ['Kleine weerschijnvlinder','Apatura ilia','nym','ijsvogel','zeldzaam',1],
+ ['Atalanta','Vanessa atalanta','nym','vos','trek',0],
+ ['Distelvlinder','Vanessa cardui','nym','vos','trek',0],
+ ['Dagpauwoog','Aglais io','nym','vos','stand',0,['Inachis io']],
+ ['Kleine vos','Aglais urticae','nym','vos','stand',0],
+ ['Grote vos','Nymphalis polychloros','nym','vos','zeldzaam',0],
+ ['Oostelijke vos','Nymphalis xanthomelas','nym','vos','zwerver',0],
+ ['Rouwmantel','Nymphalis antiopa','nym','vos','zwerver',0],
+ ['Gehakkelde aurelia','Polygonia c-album','nym','vos','stand',0],
+ ['Landkaartje','Araschnia levana','nym','vos','stand',0],
+ ['Keizersmantel','Argynnis paphia','nym','parel-groot','stand',1],
+ ['Grote parelmoervlinder','Speyeria aglaja','nym','parel-groot','stand',1,['Argynnis aglaja']],
+ ['Bosrandparelmoervlinder','Fabriciana adippe','nym','parel-groot','verdwenen',1,['Argynnis adippe']],
+ ['Duinparelmoervlinder','Fabriciana niobe','nym','parel-groot','stand',1,['Argynnis niobe']],
+ ['Kleine parelmoervlinder','Issoria lathonia','nym','parel-groot','stand',0],
+ ['Purperstreepparelmoervlinder','Brenthis ino','nym','parel-klein','zeldzaam',0],
+ ['Zilveren maan','Boloria selene','nym','parel-klein','stand',0,['Clossiana selene']],
+ ['Parelmoervlinder','Boloria euphrosyne','nym','parel-klein','verdwenen',0,['Clossiana euphrosyne']],
+ ['Veenbesparelmoervlinder','Boloria aquilonaris','nym','parel-klein','stand',0],
+ ['Akkerparelmoervlinder','Boloria dia','nym','parel-klein','verdwenen',0,['Clossiana dia']],
+ ['Veldparelmoervlinder','Melitaea cinxia','nym','parel-klein','stand',0],
+ ['Bosparelmoervlinder','Melitaea athalia','nym','parel-klein','stand',0],
+ ['Woudparelmoervlinder','Melitaea diamina','nym','parel-klein','verdwenen',0],
+ ['Moerasparelmoervlinder','Euphydryas aurinia','nym','parel-klein','verdwenen',0],
+ ['Bont zandoogje','Pararge aegeria','nym','zandoog','stand',0],
+ ['Argusvlinder','Lasiommata megera','nym','zandoog','stand',1],
+ ['Rotsvlinder','Lasiommata maera','nym','zandoog','verdwenen',1],
+ ['Koevinkje','Aphantopus hyperantus','nym','zandoog','stand',0],
+ ['Bruin zandoogje','Maniola jurtina','nym','zandoog','stand',1],
+ ['Oranje zandoogje','Pyronia tithonus','nym','zandoog','stand',1],
+ ['Dambordje','Melanargia galathea','nym','zandoog','stand',1],
+ ['Hooibeestje','Coenonympha pamphilus','nym','hooi','stand',0],
+ ['Veenhooibeestje','Coenonympha tullia','nym','hooi','stand',0],
+ ['Tweekleurig hooibeestje','Coenonympha arcania','nym','hooi','verdwenen',0],
+ ['Heivlinder','Hipparchia semele','nym','hei','stand',1],
+ ['Kleine heivlinder','Hipparchia statilinus','nym','hei','verdwenen',1],
+ ['Blauwoogvlinder','Minois dryas','nym','hei','verdwenen',1]
+];
+const SPECIES = RAW.map((a,i)=>({i,nl:a[0],sci:a[1],fam:a[2],g:a[3],st:a[4],dim:!!a[5],alt:a[6]||[]}));
+const BY_SCI = Object.fromEntries(SPECIES.map(s=>[s.sci,s]));
+const FAM = {hes:'Dikkopjes',pap:'Pages',pie:'Witjes',rio:'Prachtvlinders',lyc:'Kleine pages, vuurvlinders en blauwtjes',nym:"Aurelia's"};
+const FAM_ORDER = ['hes','pap','pie','rio','lyc','nym'];
+const STATUS = {stand:'Standvlinder',trek:'Trekvlinder',zeldzaam:'Zeer zeldzaam of herontdekt',zwerver:'Zwerver of dwaalgast',verdwenen:'Uit Nederland verdwenen'};
+const SEXL = {m:'♂ Mannetje',f:'♀ Vrouwtje'};
+const SIDEL = {up:'Bovenzijde',down:'Onderzijde'};
+
+/* ---------- Helpers ---------- */
+const $ = s=>document.querySelector(s);
+function el(tag,attrs,...kids){
+  const e=document.createElement(tag);
+  for(const [k,v] of Object.entries(attrs||{})){
+    if(k==='class') e.className=v;
+    else if(k.startsWith('on')&&typeof v==='function') e.addEventListener(k.slice(2),v);
+    else if(v===true) e.setAttribute(k,'');
+    else if(v!==false&&v!=null) e.setAttribute(k,v);
+  }
+  for(const c of kids){ if(c==null||c===false) continue; e.append(c.nodeType?c:document.createTextNode(String(c))); }
+  return e;
+}
+const LS = {
+  get(k,d){ try{ const v=localStorage.getItem(k); return v==null?d:JSON.parse(v); }catch(e){ return d; } },
+  set(k,v){ try{ localStorage.setItem(k,JSON.stringify(v)); return true; }catch(e){ return false; } },
+  del(k){ try{ localStorage.removeItem(k); }catch(e){} }
+};
+function shuffle(a){ a=a.slice(); for(let i=a.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); [a[i],a[j]]=[a[j],a[i]]; } return a; }
+function weightedPick(arr,w){ const ws=arr.map(w); const tot=ws.reduce((x,y)=>x+y,0); let r=Math.random()*tot; for(let i=0;i<arr.length;i++){ r-=ws[i]; if(r<=0) return arr[i]; } return arr[arr.length-1]; }
+const fmt = n=>n.toLocaleString('nl-NL');
+const strip = s=>(s||'').replace(/<[^>]*>/g,' ').replace(/&nbsp;/g,' ').replace(/&amp;/g,'&').replace(/&[a-z#0-9]+;/gi,' ').replace(/\s+/g,' ').trim();
+const norm = s=>(s||'').toLowerCase().replace(/[_\-.,()/:]/g,' ').replace(/\s+/g,' ');
+
+/* ---------- Correcties (overrides) ---------- */
+let localOver = LS.get('vd-over',{});
+let sharedOver = {};
+function over(t){ return Object.assign({}, sharedOver[t]||{}, localOver[t]||{}); }
+function setOver(t,patch){ localOver[t]=Object.assign({}, localOver[t]||{}, patch); LS.set('vd-over',localOver); updateOverInfo(); }
+function eff(it){
+  const o=over(it.t);
+  return {
+    s: o.s!==undefined ? (o.s==='u'?null:o.s) : it.s,
+    d: o.d!==undefined ? (o.d==='u'?null:o.d) : it.d,
+    h: !!o.h
+  };
+}
+
+/* ---------- Wikimedia Commons ---------- */
+const API = 'https://commons.wikimedia.org/w/api.php';
+const CACHE_V = 'vd-c1:';
+const TTL = 1000*60*60*24*30;
+const fileUrl = (t,w)=>'https://commons.wikimedia.org/wiki/Special:FilePath/'+encodeURIComponent(t)+'?width='+w;
+const pageUrl = t=>'https://commons.wikimedia.org/wiki/File:'+encodeURIComponent(t.replace(/ /g,'_'));
+
+async function commonsSearch(q,limit){
+  const base={action:'query',format:'json',origin:'*',generator:'search',gsrnamespace:'6',
+    gsrsearch:q+' filetype:bitmap',gsrlimit:String(limit),prop:'imageinfo',iiprop:'extmetadata|mime',
+    iiextmetadatafilter:'Artist|LicenseShortName|ImageDescription|Categories|ObjectName',iiextmetadatalanguage:'en'};
+  const pages={}; let cont={};
+  for(let round=0;round<4;round++){
+    const ctrl=new AbortController(); const timer=setTimeout(()=>ctrl.abort(),20000);
+    let j;
+    try{
+      const r=await fetch(API+'?'+new URLSearchParams(Object.assign({},base,cont)),{signal:ctrl.signal});
+      if(!r.ok) throw new Error('HTTP '+r.status);
+      j=await r.json();
+    } finally { clearTimeout(timer); }
+    if(j.query&&j.query.pages){
+      for(const pg of Object.values(j.query.pages)){
+        const ex=pages[pg.title];
+        if(!ex) pages[pg.title]=pg;
+        else if(pg.imageinfo&&!ex.imageinfo) ex.imageinfo=pg.imageinfo;
+      }
+    }
+    if(j.continue&&j.continue.iicontinue) cont=j.continue; else break;
+  }
+  return Object.values(pages);
+}
+
+/* Herkenning van sekse en zijde uit tekst */
+const RX_EXCL=/\b(larva|larvae|larve|larven|caterpillars?|raupen?|rups|rupsen|pupa|pupae|puppe|chrysalis|chrysalids?|eggs?|eier|eitjes?|oeufs?|chenilles?|orugas?|habitat|biotope?|host ?plants?|distribution|maps?|stamps?|genitalia|venation|drawings?|illustrations?|plates?|tafel|lithograph\w*|engraving\w*|parasitoids?)\b/i;
+const RX_F=/\bfemales?\b|\bfemelles?\b|\bweibchen\b|\bweiblich\w*|\bvrouwtjes?\b|\bwijfjes?\b|\bfemmina\b|\bhembra\b|\bsamice\b|\bsamica\b|♀/i;
+const RX_M=/\bmales?\b|\bmâles?\b|\bmännchen\b|\bmännlich\w*|\bmannetjes?\b|\bmaschio\b|\bmacho\b|\bsamec\b|\bsamiec\b|♂/i;
+const RX_PAIR=/\b(mating|copula\w*|pair|paired|paring|parend|paarung|accouplement|coupled|in tandem)\b/i;
+const RX_UP=/\bupper ?sides?\b|\bupper-side\b|\bdorsal\w*|\bdorsum\b|\brecto\b|\boberseite\b|\bbovenkant\b|\bbovenzijde\b|\bdessus\b|\bopen(ed)? wings\b|\bwings? (open|opened|spread)\b|\bspread wings\b/i;
+const RX_DN=/\bunder ?sides?\b|\bunder-side\b|\bventral\w*|\bverso\b|\bunterseite\b|\bonderkant\b|\bonderzijde\b|\bdessous\b|\bclosed wings\b|\bwings? closed\b|\bunderwings?\b/i;
+
+function detect(txt){
+  txt=txt.replace(/[_\-]/g,' ');
+  let s=null,d=null;
+  const f=RX_F.test(txt), m=RX_M.test(txt);
+  if(RX_PAIR.test(txt)||(f&&m)) s='x'; else if(f) s='f'; else if(m) s='m';
+  const u=RX_UP.test(txt), dn=RX_DN.test(txt);
+  if(u&&dn) d='x'; else if(u) d='up'; else if(dn) d='down';
+  return {s,d};
+}
+function classify(pg,sp){
+  const ii=pg.imageinfo&&pg.imageinfo[0]; if(!ii) return null;
+  if(ii.mime&&!/^image\/(jpeg|png|webp|tiff|gif)/.test(ii.mime)) return null;
+  const em=ii.extmetadata||{};
+  const title=pg.title.replace(/^File:/,'');
+  const cats=(em.Categories&&em.Categories.value)||'';
+  const names=[sp.sci,...sp.alt].map(n=>norm(n));
+  const tn=norm(title), cn=norm(cats);
+  if(!names.some(n=>tn.includes(n)||cn.includes(n))) return null;
+  const primary=title+' | '+cats.replace(/\|/g,' | ');
+  if(RX_EXCL.test(primary)) return null;
+  const desc=strip(em.ImageDescription&&em.ImageDescription.value)+' '+strip(em.ObjectName&&em.ObjectName.value);
+  const a=detect(primary), b=detect(desc);
+  let s=a.s!==null?a.s:b.s, d=a.d!==null?a.d:b.d;
+  if(s==='x') s=null; if(d==='x') d=null;
+  let artist=strip(em.Artist&&em.Artist.value); if(artist.length>80) artist=artist.slice(0,77)+'…';
+  const lic=strip(em.LicenseShortName&&em.LicenseShortName.value);
+  return {t:title,a:artist,l:lic,s,d};
+}
+
+/* ---------- Laden ---------- */
+const pools={}; const loading=new Set(); const badImg=new Set();
+async function loadSpecies(sp){
+  const key=CACHE_V+sp.sci; const c=LS.get(key,null);
+  if(c&&c.items&&Date.now()-c.t<TTL){ pools[sp.sci]=c.items; return; }
+  const seen=new Map(); let okQueries=0;
+  const qs=[[`"${sp.sci}"`,50],[`"${sp.sci}" female`,40],[`"${sp.sci}" male`,40],[`"${sp.sci}" underside`,30],[`"${sp.sci}" upperside`,20]];
+  for(const a of sp.alt) qs.push([`"${a}"`,30]);
+  for(const [q,n] of qs){
+    let pages;
+    try{ pages=await commonsSearch(q,n); okQueries++; }catch(e){ continue; }
+    for(const pg of pages){ if(!seen.has(pg.title)||!seen.get(pg.title)) seen.set(pg.title,classify(pg,sp)); }
+  }
+  const items=[...seen.values()].filter(Boolean).slice(0,180);
+  pools[sp.sci]=items;
+  if(okQueries>0) LS.set(key,{t:Date.now(),items});
+}
+let loadedCount=0;
+async function loadAll(order){
+  const list=order.filter(s=>!(s.sci in pools));
+  let idx=0;
+  async function worker(){
+    while(idx<list.length){
+      const sp=list[idx++];
+      if(sp.sci in pools||loading.has(sp.sci)) continue;
+      loading.add(sp.sci);
+      try{ await loadSpecies(sp); }catch(e){ pools[sp.sci]=[]; }
+      loading.delete(sp.sci);
+      onLoaded(sp);
+    }
+  }
+  await Promise.all(Array.from({length:4},worker));
+}
+let spRenderTimer=null;
+function onLoaded(sp){
+  loadedCount=Object.keys(pools).length;
+  const total=Object.values(pools).reduce((n,a)=>n+a.length,0);
+  $('#loadStatus').textContent = loadedCount<SPECIES.length
+    ? `Foto's laden van Wikimedia Commons: ${loadedCount} van ${SPECIES.length} soorten`
+    : `${SPECIES.length} soorten, ${fmt(total)} foto's van Wikimedia Commons`;
+  updatePoolInfo();
+  if(game.waiting) nextQuestion();
+  if(!$('#tab-species').hidden){
+    clearTimeout(spRenderTimer);
+    spRenderTimer=setTimeout(()=>{ renderSpeciesList(); if(selSp===sp.sci) renderDetail(); },400);
+  }
+}
+
+/* ---------- Instellingen ---------- */
+const form=$('#setupForm');
+(function buildFamChecks(){
+  const box=$('#famChecks');
+  for(const f of FAM_ORDER) box.append(el('label',{class:'check'},el('input',{type:'checkbox',name:'fam',value:f,checked:true}),el('span',{},FAM[f])));
+})();
+function readSettings(){
+  return {
+    st:[...form.querySelectorAll('input[name=st]:checked')].map(i=>i.value),
+    fam:[...form.querySelectorAll('input[name=fam]:checked')].map(i=>i.value),
+    side:form.elements.side.value, unk:form.elements.unk.checked,
+    sex:form.elements.sex.value, askSex:form.elements.askSex.checked,
+    mode:form.elements.mode.value, sci:form.elements.sci.checked,
+    rounds:+form.elements.rounds.value
+  };
+}
+function applySettings(s){
+  if(!s) return;
+  form.querySelectorAll('input[name=st]').forEach(i=>i.checked=s.st.includes(i.value));
+  form.querySelectorAll('input[name=fam]').forEach(i=>i.checked=s.fam.includes(i.value));
+  for(const k of ['side','sex','mode']) form.querySelectorAll(`input[name=${k}]`).forEach(i=>i.checked=i.value===s[k]);
+  form.elements.unk.checked=!!s.unk; form.elements.askSex.checked=!!s.askSex; form.elements.sci.checked=!!s.sci;
+  form.elements.rounds.value=String(s.rounds);
+}
+applySettings(LS.get('vd-set',null));
+form.addEventListener('change',()=>{ LS.set('vd-set',readSettings()); updatePoolInfo(); });
+
+const eligibleSpecies = set=>SPECIES.filter(s=>set.st.includes(s.st)&&set.fam.includes(s.fam));
+function buildPool(set){
+  const out=[];
+  for(const sp of eligibleSpecies(set)){
+    const items=pools[sp.sci]; if(!items) continue;
+    for(const it of items){
+      if(badImg.has(it.t)) continue;
+      const e=eff(it); if(e.h) continue;
+      if(set.side==='all'){ if(e.d==null&&!set.unk) continue; }
+      else if(e.d!==set.side) continue;
+      if(set.sex!=='all'&&e.s!==set.sex) continue;
+      out.push({sp,it,e});
+    }
+  }
+  return out;
+}
+function updatePoolInfo(){
+  const set=readSettings(); const pool=buildPool(set);
+  const nSp=new Set(pool.map(p=>p.sp.sci)).size; const nEl=eligibleSpecies(set).length;
+  $('#poolInfo').textContent = nEl===0 ? 'Kies minstens één soortgroep en familie.'
+    : `Nu beschikbaar: ${fmt(pool.length)} foto's van ${nSp} van de ${nEl} gekozen soorten.`;
+  $('#startBtn').disabled = nEl===0;
+}
+
+/* ---------- Statistiek ---------- */
+let stats=LS.get('vd-stats',{}); let conf=LS.get('vd-conf',{});
+function weightFor(sci){ const s=stats[sci]||{n:0,ok:0}; const err=(s.n-s.ok+1)/(s.n+2); return 0.35+err*2.2; }
+
+/* ---------- Spel ---------- */
+const game={set:null,n:0,correct:0,mistakes:[],recentT:[],recentS:[],cur:null,stage:null,waiting:false,chosen:null,chosenSex:null,okSp:null,okSex:null};
+const qimg=$('#qimg');
+qimg.addEventListener('load',()=>{ qimg.classList.remove('loading'); $('#spinner').hidden=true; });
+qimg.addEventListener('error',()=>{
+  if(!game.cur) return;
+  badImg.add(game.cur.it.t);
+  if(game.stage==='species') nextQuestion();
+});
+qimg.addEventListener('click',()=>{ if(game.cur) openLightbox(game.cur.it.t); });
+
+function startGame(){
+  game.set=readSettings(); LS.set('vd-set',game.set);
+  Object.assign(game,{n:0,correct:0,mistakes:[],recentT:[],recentS:[],cur:null});
+  $('#setup').hidden=true; $('#end').hidden=true; $('#game').hidden=false;
+  const order=[...eligibleSpecies(game.set),...SPECIES]; loadAll(order);
+  nextQuestion();
+}
+function stopGame(){ endGame(); }
+$('#startBtn').addEventListener('click',startGame);
+$('#stopBtn').addEventListener('click',stopGame);
+
+function nextQuestion(){
+  const set=game.set;
+  if(set.rounds&&game.n>=set.rounds){ endGame(); return; }
+  const pool=buildPool(set);
+  if(!pool.length){ game.waiting=true; $('#waitMsg').hidden=false; $('#askSpecies').hidden=true; $('#askSex').hidden=true; $('#reveal').hidden=true; return; }
+  game.waiting=false; $('#waitMsg').hidden=true;
+  const by=new Map();
+  for(const p of pool){ if(!by.has(p.sp.sci)) by.set(p.sp.sci,[]); by.get(p.sp.sci).push(p); }
+  let cands=[...by.keys()];
+  const avoid=game.recentS.slice(-Math.min(3,Math.floor(cands.length/2)));
+  if(cands.length>1){ const f=cands.filter(s=>!avoid.includes(s)); if(f.length) cands=f; }
+  const sci=weightedPick(cands,weightFor);
+  let imgs=by.get(sci).filter(p=>!game.recentT.includes(p.it.t)); if(!imgs.length) imgs=by.get(sci);
+  game.cur=imgs[Math.floor(Math.random()*imgs.length)];
+  game.recentT.push(game.cur.it.t); if(game.recentT.length>40) game.recentT.shift();
+  game.recentS.push(sci); if(game.recentS.length>5) game.recentS.shift();
+  Object.assign(game,{stage:'species',chosen:null,chosenSex:null,okSp:null,okSex:null});
+  renderQuestion();
+}
+function makeOptions(sp,set){
+  const pool=eligibleSpecies(set).filter(s=>s!==sp);
+  let others;
+  if(set.mode==='hard'){
+    const confused=Object.entries(conf[sp.sci]||{}).sort((a,b)=>b[1]-a[1]).map(([s])=>BY_SCI[s]).filter(s=>s&&pool.includes(s)).slice(0,2);
+    const same=shuffle(pool.filter(s=>s.g===sp.g&&!confused.includes(s)));
+    const fam=shuffle(pool.filter(s=>s.fam===sp.fam&&s.g!==sp.g&&!confused.includes(s)));
+    const rest=shuffle(pool.filter(s=>s.fam!==sp.fam&&!confused.includes(s)));
+    others=[...confused,...same,...fam,...rest].slice(0,5);
+  } else others=shuffle(pool).slice(0,3);
+  return shuffle([sp,...others]);
+}
+function renderQuestion(){
+  const {sp,it,e}=game.cur, set=game.set;
+  $('#qnum').textContent = set.rounds ? `Vraag ${game.n+1} van ${set.rounds}` : `Vraag ${game.n+1}`;
+  $('#qscore').textContent = `${game.correct} goed`;
+  qimg.classList.add('loading'); $('#spinner').hidden=false;
+  qimg.src=fileUrl(it.t,1100);
+  $('#qside').textContent = e.d ? SIDEL[e.d] : 'Zijde niet vermeld';
+  $('#askSpecies').hidden=false; $('#askSex').hidden=true; $('#reveal').hidden=true; $('#reveal').innerHTML='';
+  const box=$('#options'); box.innerHTML='';
+  if(set.mode==='type'){
+    box.hidden=true; $('#typeForm').hidden=false; const inp=$('#typeInput'); inp.value=''; inp.disabled=false; inp.focus();
+  } else {
+    box.hidden=false; $('#typeForm').hidden=true;
+    makeOptions(sp,set).forEach((s,i)=>{
+      box.append(el('button',{type:'button',class:'opt','data-sci':s.sci,onclick:()=>answerSpecies(s)},
+        el('span',{class:'k'},String(i+1)),
+        el('span',{},el('span',{class:'nl'},s.nl), set.sci?el('span',{class:'sci'},s.sci):null)));
+    });
+  }
+}
+$('#typeForm').addEventListener('submit',ev=>{
+  ev.preventDefault(); if(game.stage!=='species') return;
+  const v=$('#typeInput').value.trim().toLowerCase(); if(!v) return;
+  const match=SPECIES.find(s=>s.nl.toLowerCase()===v||s.sci.toLowerCase()===v||s.alt.some(a=>a.toLowerCase()===v));
+  $('#typeInput').disabled=true;
+  answerSpecies(match||{nl:$('#typeInput').value.trim(),sci:null,typed:true});
+});
+function needSex(){ const {sp,e}=game.cur; return game.set.askSex&&sp.dim&&(e.s==='m'||e.s==='f'); }
+function answerSpecies(chosen){
+  if(game.stage!=='species') return;
+  game.chosen=chosen; game.okSp = chosen===game.cur.sp;
+  document.querySelectorAll('#options .opt').forEach(b=>{
+    b.disabled=true;
+    if(b.dataset.sci===game.cur.sp.sci) b.classList.add('is-right');
+    else if(chosen&&b.dataset.sci===chosen.sci) b.classList.add('is-wrong');
+    else b.classList.add('dim');
+  });
+  if(needSex()){
+    game.stage='sex'; $('#askSex').hidden=false;
+    $('#askSex').querySelectorAll('.opt').forEach(b=>{ b.disabled=false; b.className='opt'; });
+    $('#askSex .opt').focus();
+  } else finish();
+}
+$('#askSex').addEventListener('click',ev=>{ const b=ev.target.closest('[data-sex]'); if(b) answerSex(b.dataset.sex); });
+function answerSex(s){
+  if(game.stage!=='sex') return;
+  game.chosenSex=s; game.okSex = s===game.cur.e.s;
+  $('#askSex').querySelectorAll('.opt').forEach(b=>{
+    b.disabled=true;
+    if(b.dataset.sex===game.cur.e.s) b.classList.add('is-right'); else if(b.dataset.sex===s) b.classList.add('is-wrong');
+  });
+  finish();
+}
+function finish(){
+  game.stage='reveal';
+  const {sp,it,e}=game.cur;
+  const st=stats[sp.sci]||(stats[sp.sci]={n:0,ok:0}); st.n++; if(game.okSp) st.ok++;
+  if(!game.okSp&&game.chosen&&game.chosen.sci){ const c=conf[sp.sci]||(conf[sp.sci]={}); c[game.chosen.sci]=(c[game.chosen.sci]||0)+1; }
+  LS.set('vd-stats',stats); LS.set('vd-conf',conf);
+  const allOk = game.okSp && game.okSex!==false;
+  if(allOk) game.correct++; else game.mistakes.push({sp,it,e,chosen:game.chosen,chosenSex:game.chosenSex,okSp:game.okSp});
+  game.n++;
+  $('#qscore').textContent=`${game.correct} goed`;
+  renderReveal(allOk);
+}
+function renderReveal(allOk){
+  const {sp,it,e}=game.cur; const r=$('#reveal'); r.innerHTML=''; r.hidden=false;
+  let verdict;
+  if(allOk) verdict='Goed!';
+  else if(game.okSp) verdict='Juiste soort, verkeerde sekse';
+  else verdict='Niet goed';
+  r.append(el('p',{class:'verdict '+(allOk?'ok':'bad')},verdict));
+  if(!game.okSp&&game.chosen) r.append(el('p',{style:'margin:0'},'Jij koos: ',el('strong',{},game.chosen.nl||'(leeg)'),'.'));
+  const meta=[e.s?SEXL[e.s]:'Sekse niet vermeld', e.d?SIDEL[e.d]:'zijde niet vermeld'].join(', ').replace(', Z',', z').replace(', B',', b').replace(', O',', o');
+  r.append(el('div',{class:'label'},
+    el('div',{class:'l-nl'},sp.nl),
+    el('div',{class:'l-sci'},sp.sci),
+    el('div',{class:'l-meta'},meta),
+    el('div',{class:'l-st'},STATUS[sp.st]+(sp.dim?'':'. Mannetje en vrouwtje lijken sterk op elkaar.'))));
+  r.append(el('p',{class:'credit'},'Foto: ',it.a||'onbekend',it.l?` (${it.l})`:'',', ',el('a',{href:pageUrl(it.t),target:'_blank',rel:'noopener'},'bekijk op Wikimedia Commons')));
+  const next=el('button',{class:'btn primary',type:'button',onclick:nextQuestion}, game.set.rounds&&game.n>=game.set.rounds?'Bekijk resultaat':'Volgende vraag');
+  const fixP=el('div',{class:'fix',hidden:true});
+  const fixBtn=el('button',{class:'linkbtn',type:'button',onclick:()=>{ fixP.hidden=!fixP.hidden; }},'Label klopt niet?');
+  function drawFix(){
+    fixP.innerHTML='';
+    fixP.append(el('p',{class:'small'},'Pas sekse of zijde aan, of verberg de foto als de soort niet klopt of de foto onbruikbaar is.'), relabel(it,()=>{ const ne=eff(it); game.cur.e=ne; drawFix(); }));
+  }
+  drawFix();
+  r.append(el('div',{class:'actions'},next,fixBtn),fixP);
+  next.focus();
+}
+function endGame(){
+  game.stage=null; game.waiting=false; $('#game').hidden=true; const end=$('#end'); end.hidden=false; end.innerHTML='';
+  const pct=game.n?Math.round(100*game.correct/game.n):0;
+  end.append(el('p',{class:'endscore'},`${game.correct} van ${game.n} goed`), el('p',{class:'muted'},game.n?`${pct}% correct.`:'Je hebt nog geen vragen beantwoord.'));
+  if(game.mistakes.length){
+    end.append(el('h2',{style:'font-family:var(--serif);font-weight:400;margin:1.6rem 0 0'},'Om nog eens naar te kijken'));
+    const ul=el('ul',{class:'mist'});
+    for(const m of game.mistakes){
+      const what=[m.e.s?SEXL[m.e.s]:null,m.e.d?SIDEL[m.e.d].toLowerCase():null].filter(Boolean).join(', ');
+      ul.append(el('li',{},el('img',{src:fileUrl(m.it.t,240),alt:m.sp.nl,loading:'lazy',onclick:()=>openLightbox(m.it.t),style:'cursor:zoom-in'}),
+        el('div',{},el('div',{},el('strong',{},m.sp.nl),' ',el('span',{class:'sci muted'},m.sp.sci)),
+          el('div',{class:'small muted'},(what?what+'. ':'')+(m.okSp?`Soort goed, sekse fout.`:`Jij koos: ${m.chosen?m.chosen.nl:'(leeg)'}.`)))));
+    }
+    end.append(ul);
+  }
+  end.append(el('div',{class:'actions',style:'margin-top:1.4rem'},
+    el('button',{class:'btn primary',type:'button',onclick:startGame},'Nog een ronde'),
+    el('button',{class:'btn',type:'button',onclick:()=>{ end.hidden=true; $('#setup').hidden=false; updatePoolInfo(); }},'Instellingen aanpassen')));
+}
+
+/* Toetsenbord */
+document.addEventListener('keydown',ev=>{
+  if($('#tab-play').hidden||$('#game').hidden) return;
+  if(ev.target.matches('input,textarea,select')) return;
+  if(document.querySelector('.lightbox')) return;
+  if(game.stage==='species'&&game.set.mode!=='type'){
+    const n=parseInt(ev.key,10); const btns=[...document.querySelectorAll('#options .opt')];
+    if(n>=1&&n<=btns.length){ ev.preventDefault(); btns[n-1].click(); }
+  } else if(game.stage==='sex'){
+    if(ev.key==='1'||ev.key.toLowerCase()==='m'){ ev.preventDefault(); answerSex('m'); }
+    if(ev.key==='2'||ev.key.toLowerCase()==='v'){ ev.preventDefault(); answerSex('f'); }
+  }
+});
+
+/* ---------- Relabel-knoppen ---------- */
+function relabel(it,onChange){
+  const e=eff(it); const wrap=el('div',{class:'rl'});
+  const seg=(key,vals,cur)=>{ const g=el('div',{class:'seg',role:'group'}); for(const [v,lab,title] of vals) g.append(el('button',{type:'button',class:'segb',title,'aria-label':title,'aria-pressed':String(cur===v),onclick:()=>{ setOver(it.t,{[key]:v}); onChange(); }},lab)); return g; };
+  wrap.append(
+    seg('s',[['m','♂','Mannetje'],['f','♀','Vrouwtje'],['u','?','Sekse onbekend']],e.s||'u'),
+    seg('d',[['up','Boven','Bovenzijde'],['down','Onder','Onderzijde'],['u','?','Zijde onbekend']],e.d||'u'),
+    el('button',{type:'button',class:'segb hide','aria-pressed':String(e.h),onclick:()=>{ setOver(it.t,{h:!e.h}); onChange(); }},e.h?'Terugzetten':'Verbergen'));
+  return wrap;
+}
+
+/* ---------- Lightbox ---------- */
+function openLightbox(t){
+  const lb=el('div',{class:'lightbox',role:'dialog','aria-label':'Vergrote foto',tabindex:'-1'},el('img',{src:fileUrl(t,1800),alt:'Vergrote foto'}));
+  const close=()=>{ lb.remove(); document.removeEventListener('keydown',esc); };
+  const esc=ev=>{ if(ev.key==='Escape') close(); };
+  lb.addEventListener('click',close); document.addEventListener('keydown',esc);
+  document.body.append(lb); lb.focus();
+}
+
+/* ---------- Soorten-tab ---------- */
+let selSp=null, showHidden=false;
+function counts(sp){
+  const c={mu:0,md:0,fu:0,fd:0,ov:0,h:0};
+  for(const it of pools[sp.sci]||[]){ const e=eff(it); if(e.h){c.h++;continue;} const k=(e.s||'')+(e.d==='up'?'u':e.d==='down'?'d':''); if(k in c&&k.length===2) c[k]++; else c.ov++; }
+  return c;
+}
+function renderSpeciesList(){
+  const q=norm($('#spSearch').value.trim()); const list=$('#spList'); const st=list.scrollTop; list.innerHTML='';
+  for(const f of FAM_ORDER){
+    const sps=SPECIES.filter(s=>s.fam===f&&(!q||norm(s.nl).includes(q)||norm(s.sci).includes(q)));
+    if(!sps.length) continue;
+    list.append(el('h3',{},FAM[f]));
+    for(const sp of sps){
+      const loaded=sp.sci in pools; const c=loaded?counts(sp):null;
+      const cnt=el('span',{class:'cnt'});
+      if(!loaded) cnt.append(el('span',{},'…'));
+      else for(const [k,lab] of [['mu','♂↑'],['md','♂↓'],['fu','♀↑'],['fd','♀↓'],['ov','ov']]) cnt.append(el('span',{class:c[k]===0&&k!=='ov'&&sp.dim?'zero':'',title:lab},`${lab.replace('ov','')}${lab==='ov'?'ov ':''}${c[k]}`));
+      list.append(el('button',{type:'button',class:'sp-item','aria-current':String(selSp===sp.sci),onclick:()=>{ selSp=sp.sci; renderSpeciesList(); renderDetail(); if(window.matchMedia('(max-width:840px)').matches) $('#spDetail').scrollIntoView({behavior:'smooth'}); }},
+        el('span',{},el('span',{class:'nl'},sp.nl),el('br'),el('span',{class:'sci muted small'},sp.sci)), cnt));
+    }
+  }
+  list.scrollTop=st;
+}
+$('#spSearch').addEventListener('input',renderSpeciesList);
+function renderDetail(){
+  const box=$('#spDetail'); box.innerHTML=''; const sp=BY_SCI[selSp]; if(!sp) return;
+  box.append(el('h2',{},sp.nl), el('p',{style:'margin:.2rem 0 0'},el('span',{class:'sci'},sp.sci),sp.alt.length?el('span',{class:'muted small'},` (ook: ${sp.alt.join(', ')})`):null),
+    el('p',{class:'muted small',style:'margin:.3rem 0'},`${FAM[sp.fam]}. ${STATUS[sp.st]}.${sp.dim?' Mannetje en vrouwtje verschillen duidelijk.':' Mannetje en vrouwtje lijken sterk op elkaar.'}`),
+    el('p',{class:'small'},el('a',{href:'https://commons.wikimedia.org/wiki/Category:'+encodeURIComponent(sp.sci.replace(/ /g,'_')),target:'_blank',rel:'noopener'},'Categorie op Wikimedia Commons'),' ',
+      el('button',{class:'linkbtn small',type:'button',style:'margin-left:1rem',onclick:()=>{ showHidden=!showHidden; renderDetail(); }},showHidden?'Verborgen foto\'s niet tonen':'Verborgen foto\'s tonen'),
+      el('button',{class:'linkbtn small',type:'button',style:'margin-left:1rem',onclick:async()=>{ LS.del(CACHE_V+sp.sci); delete pools[sp.sci]; renderDetail(); await loadSpecies(sp); onLoaded(sp); renderDetail(); renderSpeciesList(); }},'Opnieuw ophalen')));
+  const items=pools[sp.sci];
+  if(!items){ box.append(el('p',{class:'muted'},'Foto\'s voor deze soort worden nog geladen.')); if(!loading.has(sp.sci)) loadAll([sp]); return; }
+  if(!items.length){ box.append(el('p',{class:'muted'},'Geen foto\'s gevonden op Wikimedia Commons. Kies "Opnieuw ophalen" of controleer de wetenschappelijke naam in de soortenlijst.')); return; }
+  const slots=[['m','up','♂ Mannetje, bovenzijde'],['m','down','♂ Mannetje, onderzijde'],['f','up','♀ Vrouwtje, bovenzijde'],['f','down','♀ Vrouwtje, onderzijde'],
+    [null,'up','Sekse onbekend, bovenzijde'],[null,'down','Sekse onbekend, onderzijde'],['m',null,'♂ Mannetje, zijde onbekend'],['f',null,'♀ Vrouwtje, zijde onbekend'],[null,null,'Sekse en zijde onbekend']];
+  for(const [s,d,title] of slots){
+    const its=items.filter(it=>{ const e=eff(it); return !e.h&&e.s===s&&e.d===d; });
+    if(!its.length&&!(sp.dim&&s&&d)) continue;
+    box.append(el('h3',{},`${title} (${its.length})`));
+    if(!its.length){ box.append(el('p',{class:'muted small'},'Nog geen foto. Zoek er een op Commons of zet het label van een andere foto om.')); continue; }
+    box.append(thumbGrid(its));
+  }
+  if(showHidden){
+    const hid=items.filter(it=>eff(it).h);
+    box.append(el('h3',{},`Verborgen (${hid.length})`)); if(hid.length) box.append(thumbGrid(hid));
+  }
+}
+function thumbGrid(its){
+  const g=el('div',{class:'thumbs'});
+  for(const it of its){
+    g.append(el('figure',{class:'thumb'},
+      el('img',{src:fileUrl(it.t,360),alt:it.t,loading:'lazy',onclick:()=>openLightbox(it.t),onerror:function(){ this.style.opacity='.3'; }}),
+      el('figcaption',{},el('a',{href:pageUrl(it.t),target:'_blank',rel:'noopener'},it.t.length>60?it.t.slice(0,57)+'…':it.t)),
+      relabel(it,()=>{ renderDetail(); renderSpeciesList(); })));
+  }
+  return g;
+}
+function updateOverInfo(){
+  const n=new Set([...Object.keys(sharedOver),...Object.keys(localOver)]).size;
+  $('#overInfo').textContent = `${n} correcties, waarvan ${Object.keys(localOver).length} lokaal in deze browser.`;
+}
+$('#exportBtn').addEventListener('click',()=>{
+  const all={}; for(const t of new Set([...Object.keys(sharedOver),...Object.keys(localOver)])) all[t]=over(t);
+  const blob=new Blob([JSON.stringify({version:1,exported:new Date().toISOString(),overrides:all},null,1)],{type:'application/json'});
+  const a=el('a',{href:URL.createObjectURL(blob),download:'curated.json'}); document.body.append(a); a.click(); a.remove();
+});
+$('#importInput').addEventListener('change',async ev=>{
+  const f=ev.target.files[0]; if(!f) return;
+  try{ const j=JSON.parse(await f.text()); const o=j.overrides||{}; for(const [t,v] of Object.entries(o)) localOver[t]=Object.assign({},localOver[t]||{},v); LS.set('vd-over',localOver); updateOverInfo(); renderSpeciesList(); renderDetail(); updatePoolInfo(); }
+  catch(e){ alert('Dit bestand kon niet worden gelezen. Kies een curated.json die je eerder hebt geëxporteerd.'); }
+  ev.target.value='';
+});
+
+/* ---------- Voortgang-tab ---------- */
+function renderStats(){
+  const box=$('#tab-stats'); box.innerHTML='';
+  const rows=SPECIES.filter(s=>stats[s.sci]&&stats[s.sci].n).map(s=>{ const st=stats[s.sci]; const c=Object.entries(conf[s.sci]||{}).sort((a,b)=>b[1]-a[1]).slice(0,3); return {s,n:st.n,ok:st.ok,p:st.ok/st.n,c}; }).sort((a,b)=>a.p-b.p||b.n-a.n);
+  const tot=rows.reduce((a,r)=>a+r.n,0), ok=rows.reduce((a,r)=>a+r.ok,0);
+  box.append(el('p',{class:'endscore',style:'font-size:2rem'},tot?`${Math.round(100*ok/tot)}% goed over ${fmt(tot)} vragen`:'Nog geen vragen beantwoord'),
+    el('p',{class:'muted'},`${rows.length} van de ${SPECIES.length} soorten al eens gezien. Soorten bovenaan de lijst krijg je vaker.`));
+  if(rows.length){
+    const tb=el('tbody');
+    for(const r of rows) tb.append(el('tr',{},el('td',{},r.s.nl,el('br'),el('span',{class:'sci muted small'},r.s.sci)),el('td',{class:'num'},String(r.n)),el('td',{class:'num'},Math.round(r.p*100)+'%'),
+      el('td',{},r.c.length?r.c.map(([sci,n])=>`${BY_SCI[sci]?BY_SCI[sci].nl:sci} (${n}×)`).join(', '):'')));
+    box.append(el('div',{class:'tablewrap'},el('table',{},el('thead',{},el('tr',{},el('th',{},'Soort'),el('th',{},'Gezien'),el('th',{},'Goed'),el('th',{},'Vaakst verward met'))),tb)));
+  }
+  box.append(el('div',{class:'actions',style:'margin-top:1.6rem'},
+    el('button',{class:'btn',type:'button',onclick:()=>{ if(confirm('Alle voortgang wissen?')){ stats={}; conf={}; LS.set('vd-stats',stats); LS.set('vd-conf',conf); renderStats(); } }},'Voortgang wissen'),
+    el('button',{class:'btn',type:'button',onclick:()=>{ if(confirm('Alle foto\'s opnieuw ophalen van Wikimedia Commons? Je correcties blijven bewaard.')){ for(const s of SPECIES){ LS.del(CACHE_V+s.sci); delete pools[s.sci]; } loadAll(SPECIES); } }},'Foto\'s opnieuw ophalen')));
+}
+
+/* ---------- Tabs ---------- */
+function showTab(t){
+  document.querySelectorAll('.tab').forEach(b=>b.setAttribute('aria-selected',String(b.dataset.tab===t)));
+  for(const x of ['play','species','stats']) $('#tab-'+x).hidden = x!==t;
+  if(t==='species'){ renderSpeciesList(); renderDetail(); updateOverInfo(); }
+  if(t==='stats') renderStats();
+  if(t==='play') updatePoolInfo();
+}
+document.querySelectorAll('.tab').forEach(b=>b.addEventListener('click',()=>showTab(b.dataset.tab)));
+
+/* ---------- Start ---------- */
+const dl=$('#nameList'); for(const s of SPECIES){ dl.append(el('option',{value:s.nl})); }
+updatePoolInfo();
+fetch('curated.json',{cache:'no-cache'}).then(r=>r.ok?r.json():null).then(j=>{ if(j&&j.overrides){ sharedOver=j.overrides; updatePoolInfo(); updateOverInfo(); } }).catch(()=>{});
+const s0=readSettings();
+loadAll([...eligibleSpecies(s0),...SPECIES]);
+})();
+</script>
+</body>
+</html>
