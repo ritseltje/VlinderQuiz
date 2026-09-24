@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Vlinders determineren</title>
-<meta name="description" content="Oefen het herkennen van de Nederlandse dagvlinders: mannetjes en vrouwtjes, boven- en onderzijde.">
+<meta name="description" content="Oefen het herkennen van de Nederlandse dagvlinders: mannetjes en vrouwtjes.">
 <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🦋</text></svg>">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -72,10 +72,11 @@ legend{font-family:var(--serif);font-size:1.2rem;padding:0 .4rem 0 0}
 @media (max-width:840px){.game{grid-template-columns:1fr}}
 .progress{display:flex;gap:1.25rem;align-items:baseline;margin-bottom:.6rem;color:var(--muted)}
 .progress .sp{margin-left:auto}
-.photo{margin:0;background:var(--stage);border-radius:6px;aspect-ratio:4/3;display:grid;place-items:center;overflow:hidden;position:relative}
+.photo{margin:0;background:var(--stage);border-radius:6px;aspect-ratio:4/3;max-height:max(300px,calc(100vh - 230px));width:100%;display:grid;place-items:center;overflow:hidden;position:relative}
 .photo img{max-width:100%;max-height:100%;object-fit:contain;cursor:zoom-in;transition:opacity .2s}
 .photo img.loading{opacity:0}
-.photo .side{position:absolute;left:.7rem;top:.7rem;background:rgba(248,250,245,.92);color:#1F2A22;padding:.2rem .6rem;border-radius:4px;font-size:.9rem;font-weight:700}
+.photo .flag{position:absolute;right:.7rem;top:.7rem;background:rgba(248,250,245,.94);color:#1F2A22;border:0;padding:.35rem .75rem;border-radius:4px;font-size:.9rem;font-weight:700;cursor:pointer}
+.photo .flag:hover{background:#FFFFFF}
 .photo .spinner{position:absolute;color:#C6CFC0;font-size:.95rem}
 .prompt{font-family:var(--serif);font-size:1.35rem;margin:0 0 .8rem}
 .options{display:grid;gap:.5rem}
@@ -194,13 +195,6 @@ footer{border-top:1px solid var(--line);padding:1.2rem 0 2rem;color:var(--muted)
           <div id="famChecks"></div>
         </fieldset>
         <fieldset>
-          <legend>Foto's</legend>
-          <label class="check"><input type="radio" name="side" value="all" checked><span>Boven- en onderzijde</span></label>
-          <label class="check"><input type="radio" name="side" value="up"><span>Alleen bovenzijde</span></label>
-          <label class="check"><input type="radio" name="side" value="down"><span>Alleen onderzijde</span></label>
-          <label class="check"><input type="checkbox" name="unk" checked><span>Ook foto's waarvan de zijde niet vermeld is<small>Geldt alleen bij "boven- en onderzijde".</small></span></label>
-        </fieldset>
-        <fieldset>
           <legend>Sekse</legend>
           <label class="check"><input type="radio" name="sex" value="all" checked><span>Mannetjes en vrouwtjes</span></label>
           <label class="check"><input type="radio" name="sex" value="m"><span>Alleen mannetjes</span></label>
@@ -237,11 +231,10 @@ footer{border-top:1px solid var(--line);padding:1.2rem 0 2rem;color:var(--muted)
           <figure class="photo">
             <span class="spinner" id="spinner">Foto laden…</span>
             <img id="qimg" alt="Vlinder om te determineren" class="loading">
-            <span class="side" id="qside"></span>
+            <button class="flag" type="button" id="badPhotoBtn" title="Verbergt deze foto en geeft een nieuwe vraag. Telt niet mee voor je score.">Foto niet goed</button>
           </figure>
           <div class="photobar">
             <p class="small muted">Klik op de foto om te vergroten.</p>
-            <button class="btn small" type="button" id="badPhotoBtn" title="Verbergt deze foto en geeft een nieuwe vraag. Telt niet mee voor je score.">Foto niet goed</button>
           </div>
           <div class="note" id="undoNote" hidden><span>Foto verborgen, deze vraag telt niet mee.</span><button class="linkbtn" type="button" id="undoBtn">Ongedaan maken</button></div>
         </div>
@@ -272,7 +265,7 @@ footer{border-top:1px solid var(--line);padding:1.2rem 0 2rem;color:var(--muted)
 
   <!-- SOORTEN -->
   <section id="tab-species" hidden>
-    <p class="intro" style="font-size:1.05rem">Sekse en zijde worden afgeleid uit de bestandsnaam, beschrijving en categorieën op Wikimedia Commons. Dat gaat niet altijd goed. Corrigeer hier een label of verberg een foto; je correcties gelden meteen in het spel. Exporteer ze als <code>curated.json</code> en zet dat bestand naast <code>index.html</code> in je repository, dan krijgt iedereen die de pagina opent ze ook.</p>
+    <p class="intro" style="font-size:1.05rem">De sekse wordt afgeleid uit de bestandsnaam, beschrijving en categorieën op Wikimedia Commons. Dat gaat niet altijd goed. Corrigeer hier de sekse of verberg een foto; je correcties gelden meteen in het spel. Exporteer ze als <code>curated.json</code> en zet dat bestand naast <code>index.html</code> in je repository, dan krijgt iedereen die de pagina opent ze ook.</p>
     <div class="sp-tools">
       <button class="btn" type="button" id="exportBtn">Correcties exporteren</button>
       <label class="btn" style="cursor:pointer">Correcties importeren<input type="file" id="importInput" accept="application/json,.json" hidden></label>
@@ -281,7 +274,7 @@ footer{border-top:1px solid var(--line);padding:1.2rem 0 2rem;color:var(--muted)
     <div class="sp-layout">
       <div>
         <input class="search" id="spSearch" type="search" placeholder="Zoek soort" aria-label="Zoek soort">
-        <p class="legend">Aantal foto's: ♂↑ mannetje bovenzijde, ♂↓ mannetje onderzijde, ♀↑ en ♀↓ idem voor vrouwtjes, "ov" overig. Rood betekent nog geen foto.</p>
+        <p class="legend">Aantal foto's per sekse: ♂ mannetjes, ♀ vrouwtjes, ? sekse onbekend. Rood betekent nog geen foto.</p>
         <div class="sp-list" id="spList"></div>
       </div>
       <div class="detail" id="spDetail"><p class="muted">Kies een soort om de foto's te bekijken en te corrigeren.</p></div>
@@ -405,7 +398,6 @@ const FAM = {hes:'Dikkopjes',pap:'Pages',pie:'Witjes',rio:'Prachtvlinders',lyc:'
 const FAM_ORDER = ['hes','pap','pie','rio','lyc','nym'];
 const STATUS = {stand:'Standvlinder',trek:'Trekvlinder',zeldzaam:'Zeer zeldzaam of herontdekt',zwerver:'Zwerver of dwaalgast',verdwenen:'Uit Nederland verdwenen'};
 const SEXL = {m:'♂ Mannetje',f:'♀ Vrouwtje'};
-const SIDEL = {up:'Bovenzijde',down:'Onderzijde'};
 
 /* ---------- Helpers ---------- */
 const $ = s=>document.querySelector(s);
@@ -440,14 +432,13 @@ function eff(it){
   const o=over(it.t);
   return {
     s: o.s!==undefined ? (o.s==='u'?null:o.s) : it.s,
-    d: o.d!==undefined ? (o.d==='u'?null:o.d) : it.d,
     h: !!o.h
   };
 }
 
 /* ---------- Wikimedia Commons ---------- */
 const API = 'https://commons.wikimedia.org/w/api.php';
-const CACHE_V = 'vd-c1:';
+const CACHE_V = 'vd-c2:';
 const TTL = 1000*60*60*24*30;
 const fileUrl = (t,w)=>'https://commons.wikimedia.org/wiki/Special:FilePath/'+encodeURIComponent(t)+'?width='+w;
 const pageUrl = t=>'https://commons.wikimedia.org/wiki/File:'+encodeURIComponent(t.replace(/ /g,'_'));
@@ -477,22 +468,18 @@ async function commonsSearch(q,limit){
   return Object.values(pages);
 }
 
-/* Herkenning van sekse en zijde uit tekst */
+/* Herkenning van sekse uit tekst */
 const RX_EXCL=/\b(larva|larvae|larve|larven|caterpillars?|raupen?|rups|rupsen|pupa|pupae|puppe|chrysalis|chrysalids?|eggs?|eier|eitjes?|oeufs?|chenilles?|orugas?|habitat|biotope?|host ?plants?|distribution|maps?|stamps?|genitalia|venation|drawings?|illustrations?|plates?|tafel|lithograph\w*|engraving\w*|parasitoids?)\b/i;
 const RX_F=/\bfemales?\b|\bfemelles?\b|\bweibchen\b|\bweiblich\w*|\bvrouwtjes?\b|\bwijfjes?\b|\bfemmina\b|\bhembra\b|\bsamice\b|\bsamica\b|♀/i;
 const RX_M=/\bmales?\b|\bmâles?\b|\bmännchen\b|\bmännlich\w*|\bmannetjes?\b|\bmaschio\b|\bmacho\b|\bsamec\b|\bsamiec\b|♂/i;
 const RX_PAIR=/\b(mating|copula\w*|pair|paired|paring|parend|paarung|accouplement|coupled|in tandem)\b/i;
-const RX_UP=/\bupper ?sides?\b|\bupper-side\b|\bdorsal\w*|\bdorsum\b|\brecto\b|\boberseite\b|\bbovenkant\b|\bbovenzijde\b|\bdessus\b|\bopen(ed)? wings\b|\bwings? (open|opened|spread)\b|\bspread wings\b/i;
-const RX_DN=/\bunder ?sides?\b|\bunder-side\b|\bventral\w*|\bverso\b|\bunterseite\b|\bonderkant\b|\bonderzijde\b|\bdessous\b|\bclosed wings\b|\bwings? closed\b|\bunderwings?\b/i;
 
 function detect(txt){
   txt=txt.replace(/[_\-]/g,' ');
-  let s=null,d=null;
+  let s=null;
   const f=RX_F.test(txt), m=RX_M.test(txt);
   if(RX_PAIR.test(txt)||(f&&m)) s='x'; else if(f) s='f'; else if(m) s='m';
-  const u=RX_UP.test(txt), dn=RX_DN.test(txt);
-  if(u&&dn) d='x'; else if(u) d='up'; else if(dn) d='down';
-  return {s,d};
+  return {s};
 }
 function classify(pg,sp){
   const ii=pg.imageinfo&&pg.imageinfo[0]; if(!ii) return null;
@@ -507,11 +494,11 @@ function classify(pg,sp){
   if(RX_EXCL.test(primary)) return null;
   const desc=strip(em.ImageDescription&&em.ImageDescription.value)+' '+strip(em.ObjectName&&em.ObjectName.value);
   const a=detect(primary), b=detect(desc);
-  let s=a.s!==null?a.s:b.s, d=a.d!==null?a.d:b.d;
-  if(s==='x') s=null; if(d==='x') d=null;
+  let s=a.s!==null?a.s:b.s;
+  if(s==='x') s=null;
   let artist=strip(em.Artist&&em.Artist.value); if(artist.length>80) artist=artist.slice(0,77)+'…';
   const lic=strip(em.LicenseShortName&&em.LicenseShortName.value);
-  return {t:title,a:artist,l:lic,s,d};
+  return {t:title,a:artist,l:lic,s};
 }
 
 /* ---------- Laden ---------- */
@@ -520,7 +507,7 @@ async function loadSpecies(sp){
   const key=CACHE_V+sp.sci; const c=LS.get(key,null);
   if(c&&c.items&&Date.now()-c.t<TTL){ pools[sp.sci]=c.items; return; }
   const seen=new Map(); let okQueries=0;
-  const qs=[[`"${sp.sci}"`,50],[`"${sp.sci}" female`,40],[`"${sp.sci}" male`,40],[`"${sp.sci}" underside`,30],[`"${sp.sci}" upperside`,20]];
+  const qs=[[`"${sp.sci}"`,50],[`"${sp.sci}" female`,40],[`"${sp.sci}" male`,40]];
   for(const a of sp.alt) qs.push([`"${a}"`,30]);
   for(const [q,n] of qs){
     let pages;
@@ -572,7 +559,6 @@ function readSettings(){
   return {
     st:[...form.querySelectorAll('input[name=st]:checked')].map(i=>i.value),
     fam:[...form.querySelectorAll('input[name=fam]:checked')].map(i=>i.value),
-    side:form.elements.side.value, unk:form.elements.unk.checked,
     sex:form.elements.sex.value, askSex:form.elements.askSex.checked,
     mode:form.elements.mode.value, sci:form.elements.sci.checked,
     rounds:+form.elements.rounds.value
@@ -582,8 +568,8 @@ function applySettings(s){
   if(!s) return;
   form.querySelectorAll('input[name=st]').forEach(i=>i.checked=s.st.includes(i.value));
   form.querySelectorAll('input[name=fam]').forEach(i=>i.checked=s.fam.includes(i.value));
-  for(const k of ['side','sex','mode']) form.querySelectorAll(`input[name=${k}]`).forEach(i=>i.checked=i.value===s[k]);
-  form.elements.unk.checked=!!s.unk; form.elements.askSex.checked=!!s.askSex; form.elements.sci.checked=!!s.sci;
+  for(const k of ['sex','mode']) form.querySelectorAll(`input[name=${k}]`).forEach(i=>i.checked=i.value===s[k]);
+  form.elements.askSex.checked=!!s.askSex; form.elements.sci.checked=!!s.sci;
   form.elements.rounds.value=String(s.rounds);
 }
 applySettings(LS.get('vd-set',null));
@@ -597,8 +583,6 @@ function buildPool(set){
     for(const it of items){
       if(badImg.has(it.t)) continue;
       const e=eff(it); if(e.h) continue;
-      if(set.side==='all'){ if(e.d==null&&!set.unk) continue; }
-      else if(e.d!==set.side) continue;
       if(set.sex!=='all'&&e.s!==set.sex) continue;
       out.push({sp,it,e});
     }
@@ -697,7 +681,6 @@ function renderQuestion(){
   $('#badPhotoBtn').hidden=false;
   qimg.classList.add('loading'); $('#spinner').hidden=false;
   qimg.src=fileUrl(it.t,1100);
-  $('#qside').textContent = e.d ? SIDEL[e.d] : 'Zijde niet vermeld';
   $('#askSpecies').hidden=false; $('#askSex').hidden=true; $('#reveal').hidden=true; $('#reveal').innerHTML='';
   const box=$('#options'); box.innerHTML='';
   if(set.mode==='type'){
@@ -765,7 +748,7 @@ function renderReveal(allOk){
   else verdict='Niet goed';
   r.append(el('p',{class:'verdict '+(allOk?'ok':'bad')},verdict));
   if(!game.okSp&&game.chosen) r.append(el('p',{style:'margin:0'},'Jij koos: ',el('strong',{},game.chosen.nl||'(leeg)'),'.'));
-  const meta=[e.s?SEXL[e.s]:'Sekse niet vermeld', e.d?SIDEL[e.d]:'zijde niet vermeld'].join(', ').replace(', Z',', z').replace(', B',', b').replace(', O',', o');
+  const meta=e.s?SEXL[e.s]:'Sekse niet vermeld';
   r.append(el('div',{class:'label'},
     el('div',{class:'l-nl'},sp.nl),
     el('div',{class:'l-sci'},sp.sci),
@@ -777,7 +760,7 @@ function renderReveal(allOk){
   const fixBtn=el('button',{class:'btn',type:'button','aria-expanded':'false',onclick:()=>{ fixP.hidden=!fixP.hidden; fixBtn.setAttribute('aria-expanded',String(!fixP.hidden)); }},'Foto of label niet goed');
   function drawFix(){
     fixP.innerHTML='';
-    fixP.append(el('p',{class:'small'},'Pas sekse of zijde aan, of verberg de foto als de soort niet klopt of de foto onbruikbaar is.'), relabel(it,()=>{ const ne=eff(it); game.cur.e=ne; drawFix(); }));
+    fixP.append(el('p',{class:'small'},'Pas de sekse aan, of verberg de foto als de soort niet klopt of de foto onbruikbaar is.'), relabel(it,()=>{ const ne=eff(it); game.cur.e=ne; drawFix(); }));
   }
   drawFix();
   r.append(el('div',{class:'actions'},next,fixBtn),fixP);
@@ -791,7 +774,7 @@ function endGame(){
     end.append(el('h2',{style:'font-family:var(--serif);font-weight:400;margin:1.6rem 0 0'},'Om nog eens naar te kijken'));
     const ul=el('ul',{class:'mist'});
     for(const m of game.mistakes){
-      const what=[m.e.s?SEXL[m.e.s]:null,m.e.d?SIDEL[m.e.d].toLowerCase():null].filter(Boolean).join(', ');
+      const what=m.e.s?SEXL[m.e.s]:'';
       ul.append(el('li',{},el('img',{src:fileUrl(m.it.t,240),alt:m.sp.nl,loading:'lazy',onclick:()=>openLightbox(m.it.t),style:'cursor:zoom-in'}),
         el('div',{},el('div',{},el('strong',{},m.sp.nl),' ',el('span',{class:'sci muted'},m.sp.sci)),
           el('div',{class:'small muted'},(what?what+'. ':'')+(m.okSp?`Soort goed, sekse fout.`:`Jij koos: ${m.chosen?m.chosen.nl:'(leeg)'}.`)))));
@@ -823,7 +806,6 @@ function relabel(it,onChange){
   const seg=(key,vals,cur)=>{ const g=el('div',{class:'seg',role:'group'}); for(const [v,lab,title] of vals) g.append(el('button',{type:'button',class:'segb',title,'aria-label':title,'aria-pressed':String(cur===v),onclick:()=>{ setOver(it.t,{[key]:v}); onChange(); }},lab)); return g; };
   wrap.append(
     seg('s',[['m','♂','Mannetje'],['f','♀','Vrouwtje'],['u','?','Sekse onbekend']],e.s||'u'),
-    seg('d',[['up','Boven','Bovenzijde'],['down','Onder','Onderzijde'],['u','?','Zijde onbekend']],e.d||'u'),
     el('button',{type:'button',class:'segb hide','aria-pressed':String(e.h),onclick:()=>{ setOver(it.t,{h:!e.h}); onChange(); }},e.h?'Terugzetten':'Verbergen'));
   return wrap;
 }
@@ -840,8 +822,8 @@ function openLightbox(t){
 /* ---------- Soorten-tab ---------- */
 let selSp=null, showHidden=false;
 function counts(sp){
-  const c={mu:0,md:0,fu:0,fd:0,ov:0,h:0};
-  for(const it of pools[sp.sci]||[]){ const e=eff(it); if(e.h){c.h++;continue;} const k=(e.s||'')+(e.d==='up'?'u':e.d==='down'?'d':''); if(k in c&&k.length===2) c[k]++; else c.ov++; }
+  const c={m:0,f:0,ov:0,h:0};
+  for(const it of pools[sp.sci]||[]){ const e=eff(it); if(e.h){c.h++;continue;} if(e.s==='m') c.m++; else if(e.s==='f') c.f++; else c.ov++; }
   return c;
 }
 function renderSpeciesList(){
@@ -854,7 +836,7 @@ function renderSpeciesList(){
       const loaded=sp.sci in pools; const c=loaded?counts(sp):null;
       const cnt=el('span',{class:'cnt'});
       if(!loaded) cnt.append(el('span',{},'…'));
-      else for(const [k,lab] of [['mu','♂↑'],['md','♂↓'],['fu','♀↑'],['fd','♀↓'],['ov','ov']]) cnt.append(el('span',{class:c[k]===0&&k!=='ov'&&sp.dim?'zero':'',title:lab},`${lab.replace('ov','')}${lab==='ov'?'ov ':''}${c[k]}`));
+      else for(const [k,lab,title] of [['m','♂','Mannetjes'],['f','♀','Vrouwtjes'],['ov','?','Sekse onbekend']]) cnt.append(el('span',{class:c[k]===0&&k!=='ov'&&sp.dim?'zero':'',title},`${lab} ${c[k]}`));
       list.append(el('button',{type:'button',class:'sp-item','aria-current':String(selSp===sp.sci),onclick:()=>{ selSp=sp.sci; renderSpeciesList(); renderDetail(); if(window.matchMedia('(max-width:840px)').matches) $('#spDetail').scrollIntoView({behavior:'smooth'}); }},
         el('span',{},el('span',{class:'nl'},sp.nl),el('br'),el('span',{class:'sci muted small'},sp.sci)), cnt));
     }
@@ -872,11 +854,10 @@ function renderDetail(){
   const items=pools[sp.sci];
   if(!items){ box.append(el('p',{class:'muted'},'Foto\'s voor deze soort worden nog geladen.')); if(!loading.has(sp.sci)) loadAll([sp]); return; }
   if(!items.length){ box.append(el('p',{class:'muted'},'Geen foto\'s gevonden op Wikimedia Commons. Kies "Opnieuw ophalen" of controleer de wetenschappelijke naam in de soortenlijst.')); return; }
-  const slots=[['m','up','♂ Mannetje, bovenzijde'],['m','down','♂ Mannetje, onderzijde'],['f','up','♀ Vrouwtje, bovenzijde'],['f','down','♀ Vrouwtje, onderzijde'],
-    [null,'up','Sekse onbekend, bovenzijde'],[null,'down','Sekse onbekend, onderzijde'],['m',null,'♂ Mannetje, zijde onbekend'],['f',null,'♀ Vrouwtje, zijde onbekend'],[null,null,'Sekse en zijde onbekend']];
-  for(const [s,d,title] of slots){
-    const its=items.filter(it=>{ const e=eff(it); return !e.h&&e.s===s&&e.d===d; });
-    if(!its.length&&!(sp.dim&&s&&d)) continue;
+  const slots=[['m','♂ Mannetjes'],['f','♀ Vrouwtjes'],[null,'Sekse onbekend']];
+  for(const [s,title] of slots){
+    const its=items.filter(it=>{ const e=eff(it); return !e.h&&e.s===s; });
+    if(!its.length&&!(sp.dim&&s)) continue;
     box.append(el('h3',{},`${title} (${its.length})`));
     if(!its.length){ box.append(el('p',{class:'muted small'},'Nog geen foto. Zoek er een op Commons of zet het label van een andere foto om.')); continue; }
     box.append(thumbGrid(its));
