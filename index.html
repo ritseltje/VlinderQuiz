@@ -102,6 +102,10 @@ legend{font-family:var(--serif);font-size:1.2rem;padding:0 .4rem 0 0}
 .label .l-st{color:var(--muted);font-size:.92rem}
 .credit{font-size:.82rem;color:var(--muted);margin:.2rem 0 1rem;overflow-wrap:anywhere}
 .actions{display:flex;flex-wrap:wrap;gap:1rem;align-items:center}
+.photobar{display:flex;flex-wrap:wrap;justify-content:space-between;align-items:center;gap:.5rem 1rem;margin-top:.55rem}
+.photobar p{margin:0}
+.btn.small{padding:.35rem .75rem;font-size:.9rem}
+.note{display:flex;flex-wrap:wrap;gap:.3rem .8rem;align-items:baseline;margin-top:.6rem;padding:.45rem .7rem;border-left:3px solid var(--accent);background:var(--card);font-size:.92rem}
 .fix{margin-top:1rem;padding:.8rem;border:1px dashed var(--line);border-radius:6px}
 .fix p{margin:0 0 .5rem}
 
@@ -235,7 +239,11 @@ footer{border-top:1px solid var(--line);padding:1.2rem 0 2rem;color:var(--muted)
             <img id="qimg" alt="Vlinder om te determineren" class="loading">
             <span class="side" id="qside"></span>
           </figure>
-          <p class="small muted">Klik op de foto om te vergroten.</p>
+          <div class="photobar">
+            <p class="small muted">Klik op de foto om te vergroten.</p>
+            <button class="btn small" type="button" id="badPhotoBtn" title="Verbergt deze foto en geeft een nieuwe vraag. Telt niet mee voor je score.">Foto niet goed</button>
+          </div>
+          <div class="note" id="undoNote" hidden><span>Foto verborgen, deze vraag telt niet mee.</span><button class="linkbtn" type="button" id="undoBtn">Ongedaan maken</button></div>
         </div>
         <div>
           <div id="askSpecies">
@@ -631,11 +639,30 @@ function stopGame(){ endGame(); }
 $('#startBtn').addEventListener('click',startGame);
 $('#stopBtn').addEventListener('click',stopGame);
 
+/* Foto afkeuren tijdens de vraag */
+let lastHidden=null;
+$('#badPhotoBtn').addEventListener('click',()=>{
+  if(!game.cur||(game.stage!=='species'&&game.stage!=='sex')) return;
+  const t=game.cur.it.t;
+  setOver(t,{h:true});
+  nextQuestion();
+  lastHidden=t;
+  $('#undoNote').hidden=false;
+  updatePoolInfo();
+});
+$('#undoBtn').addEventListener('click',()=>{
+  if(!lastHidden) return;
+  setOver(lastHidden,{h:false});
+  lastHidden=null;
+  $('#undoNote').hidden=true;
+  updatePoolInfo();
+});
+
 function nextQuestion(){
   const set=game.set;
   if(set.rounds&&game.n>=set.rounds){ endGame(); return; }
   const pool=buildPool(set);
-  if(!pool.length){ game.waiting=true; $('#waitMsg').hidden=false; $('#askSpecies').hidden=true; $('#askSex').hidden=true; $('#reveal').hidden=true; return; }
+  if(!pool.length){ game.waiting=true; $('#badPhotoBtn').hidden=true; $('#waitMsg').hidden=false; $('#askSpecies').hidden=true; $('#askSex').hidden=true; $('#reveal').hidden=true; return; }
   game.waiting=false; $('#waitMsg').hidden=true;
   const by=new Map();
   for(const p of pool){ if(!by.has(p.sp.sci)) by.set(p.sp.sci,[]); by.get(p.sp.sci).push(p); }
@@ -666,6 +693,8 @@ function renderQuestion(){
   const {sp,it,e}=game.cur, set=game.set;
   $('#qnum').textContent = set.rounds ? `Vraag ${game.n+1} van ${set.rounds}` : `Vraag ${game.n+1}`;
   $('#qscore').textContent = `${game.correct} goed`;
+  $('#undoNote').hidden=true; lastHidden=null;
+  $('#badPhotoBtn').hidden=false;
   qimg.classList.add('loading'); $('#spinner').hidden=false;
   qimg.src=fileUrl(it.t,1100);
   $('#qside').textContent = e.d ? SIDEL[e.d] : 'Zijde niet vermeld';
@@ -729,6 +758,7 @@ function finish(){
 }
 function renderReveal(allOk){
   const {sp,it,e}=game.cur; const r=$('#reveal'); r.innerHTML=''; r.hidden=false;
+  $('#badPhotoBtn').hidden=true; $('#undoNote').hidden=true;
   let verdict;
   if(allOk) verdict='Goed!';
   else if(game.okSp) verdict='Juiste soort, verkeerde sekse';
@@ -744,7 +774,7 @@ function renderReveal(allOk){
   r.append(el('p',{class:'credit'},'Foto: ',it.a||'onbekend',it.l?` (${it.l})`:'',', ',el('a',{href:pageUrl(it.t),target:'_blank',rel:'noopener'},'bekijk op Wikimedia Commons')));
   const next=el('button',{class:'btn primary',type:'button',onclick:nextQuestion}, game.set.rounds&&game.n>=game.set.rounds?'Bekijk resultaat':'Volgende vraag');
   const fixP=el('div',{class:'fix',hidden:true});
-  const fixBtn=el('button',{class:'linkbtn',type:'button',onclick:()=>{ fixP.hidden=!fixP.hidden; }},'Label klopt niet?');
+  const fixBtn=el('button',{class:'btn',type:'button','aria-expanded':'false',onclick:()=>{ fixP.hidden=!fixP.hidden; fixBtn.setAttribute('aria-expanded',String(!fixP.hidden)); }},'Foto of label niet goed');
   function drawFix(){
     fixP.innerHTML='';
     fixP.append(el('p',{class:'small'},'Pas sekse of zijde aan, of verberg de foto als de soort niet klopt of de foto onbruikbaar is.'), relabel(it,()=>{ const ne=eff(it); game.cur.e=ne; drawFix(); }));
