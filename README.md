@@ -10,6 +10,9 @@ Oefenspel voor het herkennen van de Nederlandse dagvlinders: mannetjes en vrouwt
 ## Hoe de foto's worden gekozen
 Per soort zoekt het spel op Wikimedia Commons naar de wetenschappelijke naam (en synoniemen). De sekse wordt afgeleid uit bestandsnaam, categorieën en beschrijving (onder meer male/female, ♂/♀, en Duitse, Franse en Nederlandse varianten). Rupsen, eitjes, kaarten en illustraties worden overgeslagen. Resultaten worden 30 dagen in de browser bewaard.
 
+## Kenmerken bij foute antwoorden
+Bij een fout antwoord toont het spel waar je op moet letten: een gerichte tip voor bekende verwarringsparen (lijst `TIPS`), de kenmerken van de juiste soort en van jouw keuze naast elkaar (lijst `KEN`), een vergelijkingsfoto van de soort die je koos en een link naar de herkenningssectie op vlinderstichting.nl. De kenmerkteksten zijn een eigen samenvatting, geen overgenomen tekst. Wijkt de naam op de site van De Vlinderstichting af, zet dan de juiste slug als achtste element in de regel van die soort in `RAW` (zet bij geen synoniemen `[]` op de zevende plek).
+
 ## Correcties delen
 Labels die niet kloppen corrigeer je op het tabblad "Soorten en foto's". Exporteer ze als `curated.json` en commit dat bestand naast `index.html`; iedereen die de pagina opent krijgt dan dezelfde correcties.
 

@@ -107,6 +107,16 @@ legend{font-family:var(--serif);font-size:1.2rem;padding:0 .4rem 0 0}
 .photobar p{margin:0}
 .btn.small{padding:.35rem .75rem;font-size:.9rem}
 .note{display:flex;flex-wrap:wrap;gap:.3rem .8rem;align-items:baseline;margin-top:.6rem;padding:.45rem .7rem;border-left:3px solid var(--accent);background:var(--card);font-size:.92rem}
+.learn{margin:1.2rem 0 .4rem;padding-top:1rem;border-top:1px solid var(--line)}
+.learn h3{font-family:var(--serif);font-weight:400;font-size:1.3rem;margin:0 0 .6rem}
+.learn .tip{background:var(--accent-soft);border-left:3px solid var(--accent);padding:.6rem .8rem;margin:0 0 .9rem;border-radius:0 6px 6px 0}
+.cmp{display:grid;grid-template-columns:repeat(auto-fit,minmax(13rem,1fr));gap:1rem}
+.cmp h4{font-family:var(--serif);font-weight:600;font-size:1.1rem;margin:0 0 .3rem}
+.cmp h4 span{font-weight:400;color:var(--muted);font-size:.9rem}
+.cmp figure{margin:0 0 .5rem}
+.cmp figure img{width:100%;aspect-ratio:4/3;object-fit:cover;border-radius:4px;background:var(--stage);cursor:zoom-in;display:block}
+.cmp figcaption{font-size:.78rem;color:var(--muted);margin-top:.2rem}
+.ken p{margin:.1rem 0 .45rem;font-size:.95rem;line-height:1.45}
 .fix{margin-top:1rem;padding:.8rem;border:1px dashed var(--line);border-radius:6px}
 .fix p{margin:0 0 .5rem}
 
@@ -298,7 +308,7 @@ footer{border-top:1px solid var(--line);padding:1.2rem 0 2rem;color:var(--muted)
 'use strict';
 
 /* ---------- Soortenlijst ----------
-   [Nederlandse naam, wetenschappelijke naam, familie, lijkt-op-groep, status, sekse duidelijk verschillend (1/0), synoniemen] */
+   [Nederlandse naam, wetenschappelijke naam, familie, lijkt-op-groep, status, sekse duidelijk verschillend (1/0), synoniemen, slug op vlinderstichting.nl als die afwijkt] */
 const RAW = [
  ['Bont dikkopje','Carterocephalus palaemon','hes','dik-bont','stand',0],
  ['Spiegeldikkopje','Heteropterus morpheus','hes','dik-bont','stand',0],
@@ -335,7 +345,7 @@ const RAW = [
  ['Bruine eikenpage','Satyrium ilicis','lyc','klpage','zeldzaam',0],
  ['Pruimenpage','Satyrium pruni','lyc','klpage','zeldzaam',0],
  ['Boomblauwtje','Celastrina argiolus','lyc','blauw','stand',1],
- ['Dwergblauwtje','Cupido minimus','lyc','blauw','verdwenen',1],
+ ['Dwergblauwtje','Cupido minimus','lyc','blauw','verdwenen',0],
  ['Staartblauwtje','Cupido argiades','lyc','blauw','stand',1,['Everes argiades']],
  ['Tijgerblauwtje','Lampides boeticus','lyc','blauw','trek',1],
  ['Geraniumblauwtje','Cacyreus marshalli','lyc','blauw','zwerver',0],
@@ -392,12 +402,188 @@ const RAW = [
  ['Kleine heivlinder','Hipparchia statilinus','nym','hei','verdwenen',1],
  ['Blauwoogvlinder','Minois dryas','nym','hei','verdwenen',1]
 ];
-const SPECIES = RAW.map((a,i)=>({i,nl:a[0],sci:a[1],fam:a[2],g:a[3],st:a[4],dim:!!a[5],alt:a[6]||[]}));
+const SPECIES = RAW.map((a,i)=>({i,nl:a[0],sci:a[1],fam:a[2],g:a[3],st:a[4],dim:!!a[5],alt:a[6]||[],vs:a[7]||null}));
 const BY_SCI = Object.fromEntries(SPECIES.map(s=>[s.sci,s]));
 const FAM = {hes:'Dikkopjes',pap:'Pages',pie:'Witjes',rio:'Prachtvlinders',lyc:'Kleine pages, vuurvlinders en blauwtjes',nym:"Aurelia's"};
 const FAM_ORDER = ['hes','pap','pie','rio','lyc','nym'];
 const STATUS = {stand:'Standvlinder',trek:'Trekvlinder',zeldzaam:'Zeer zeldzaam of herontdekt',zwerver:'Zwerver of dwaalgast',verdwenen:'Uit Nederland verdwenen'};
 const SEXL = {m:'♂ Mannetje',f:'♀ Vrouwtje'};
+
+/* ---------- Kenmerken ----------
+   Eigen samenvatting van gangbare veldkenmerken. a = algemeen, m = mannetje, f = vrouwtje.
+   Controleer en vul aan waar nodig; de volledige beschrijving staat bij De Vlinderstichting. */
+const KEN = {
+ 'Carterocephalus palaemon':{a:'Donkerbruin met scherpe oranjegele vlekken op de bovenzijde. Onderzijde achtervleugel oranjebruin met lichte, donker omrande vlekken.'},
+ 'Heteropterus morpheus':{a:'Bovenzijde vrijwel effen donkerbruin (vrouwtje met enkele gele vlekjes). Onderzijde achtervleugel geel met grote, zwart omrande witte "spiegels". Opvallende huppelende vlucht.'},
+ 'Thymelicus sylvestris':{a:'Effen oranje dikkopje met smalle donkere rand. De sprietknop is aan de onderzijde oranjegeel, zonder zwarte punt.',m:'Geurstreep op de voorvleugel lang en licht gebogen, loopt schuin over de ader.',f:'Geen geurstreep.'},
+ 'Thymelicus lineola':{a:'Effen oranje dikkopje, vrijwel gelijk aan het geelsprietdikkopje. De sprietknop is aan de onderzijde zwart, alsof hij in inkt is gedoopt.',m:'Geurstreep kort, recht en evenwijdig aan de ader.',f:'Geen geurstreep.'},
+ 'Hesperia comma':{a:'Onderzijde achtervleugel olijfgroen met scherp begrensde zilverwitte vlekken. Bovenzijde oranje met lichte vlekjes in een donkere rand.',m:'Zwarte geurstreep met een lichte middenlijn.',f:'Grotere lichte vlekken op de bovenzijde, geen geurstreep.'},
+ 'Ochlodes sylvanus':{a:'Bovenzijde oranje met vage lichtere vlekken in een donkere buitenrand (niet effen zoals de sprietdikkopjes). Onderzijde achtervleugel groenig oranje met vage gele vlekjes, niet zilverwit.',m:'Brede zwarte geurstreep op de voorvleugel.',f:'Geen geurstreep, vlekken meer contrastrijk.'},
+ 'Pyrgus malvae':{a:'Klein, zwartbruin met een geblokt patroon van witte vlekjes en een zwart-wit geblokte franje. Onderzijde achtervleugel olijfbruin met witte vlekken.'},
+ 'Erynnis tages':{a:'Grijsbruin en gemarmerd, zonder witte vlekken in het vleugelveld; wel een rij kleine lichte stipjes langs de rand.'},
+ 'Carcharodus alceae':{a:'Bruin gemarmerd met enkele glazige witte vlekjes op de voorvleugel en een gegolfde achtervleugelrand.'},
+ 'Papilio machaon':{a:'Groot en geel met zwarte aders en banden, een blauwe band en een rode oogvlek bij het staartje. Voorvleugelbasis zwart met gele bestuiving.'},
+ 'Iphiclides podalirius':{a:'Bleek crèmewit met zwarte wigvormige strepen die schuin over de vleugels lopen, en lange staarten.'},
+ 'Leptidea sinapis':{a:'Klein, tenger witje met ronde vleugels en een zwakke, fladderende vlucht. Onderzijde achtervleugel met vage grijsgroene vlekken; het mannetje heeft een grijze vlek in de voorvleugelpunt.'},
+ 'Anthocharis cardamines':{a:'Onderzijde achtervleugel groen-wit gemarmerd, als mos. Kleine zwarte middenstip op de voorvleugel.',m:'Voorvleugelpunt fel oranje.',f:'Geen oranje; vleugelpunt grijszwart. Herken haar aan de gemarmerde onderzijde.'},
+ 'Aporia crataegi':{a:'Wit met opvallende zwarte aders en zonder stippen; vleugels iets doorschijnend.'},
+ 'Pieris brassicae':{a:'Groot witje. De zwarte vleugelpunt is groot en loopt ver langs de buitenrand naar beneden.',m:'Geen zwarte stippen op de bovenzijde van de voorvleugel.',f:'Twee zwarte stippen en een zwarte streep langs de binnenrand van de voorvleugel.'},
+ 'Pieris rapae':{a:'Kleiner witje met een kleine, grijszwarte vleugelpunt die niet ver langs de rand doorloopt. Onderzijde achtervleugel effen geelachtig, zonder donkere aders.',m:'Eén zwarte stip op de voorvleugel, soms vaag.',f:'Twee zwarte stippen op de voorvleugel.'},
+ 'Pieris napi':{a:'Onderzijde achtervleugel met duidelijk grijsgroen bestoven aders. Ook op de bovenzijde zijn de aders grijs aangezet.',m:'Eén stip op de voorvleugel, aders op de bovenzijde vrij licht.',f:'Twee stippen en sterker donker aangezette aders.'},
+ 'Pontia edusa':{a:'Onderzijde achtervleugel grof groen en wit gevlekt. Voorvleugel met een zwarte vlek in het midden en een zwart-wit geblokte punt.',m:'Weinig zwart op de bovenzijde.',f:'Meer zwarte vlekken, ook op de achtervleugel.'},
+ 'Colias crocea':{a:'Zit met gesloten vleugels: onderzijde warm geelgroen met een witte, rood omrande middenvlek. Bovenzijde diep oranje met brede zwarte rand.',m:'Zwarte rand op de bovenzijde zonder vlekken.',f:'Zwarte rand met gele vlekjes erin.'},
+ 'Colias hyale':{a:'Onderzijde bleekgeel met een witte, rood omrande middenvlek (vaak dubbel). Voorvleugelpunt vrij spits. Op foto nauwelijks te scheiden van de zuidelijke luzernevlinder.',m:'Bovenzijde citroengeel met zwarte rand.',f:'Bovenzijde witachtig met zwarte rand.'},
+ 'Colias alfacariensis':{a:'Zeer gelijk aan de gele luzernevlinder, maar met rondere voorvleugelpunt, smallere zwarte rand en een dieper oranje middenvlek op de achtervleugel bovenzijde.',m:'Helder citroengeel.',f:'Witachtig.'},
+ 'Gonepteryx rhamni':{a:'Bladvormige vleugels met een puntje aan voor- en achtervleugel en een klein oranje stipje. Geen zwarte tekening.',m:'Fel citroengeel.',f:'Bleek groenig wit; door de bladvorm en het ontbreken van zwart toch te onderscheiden van witjes.'},
+ 'Hamearis lucina':{a:'Klein en donkerbruin met rijen oranje vlekken. Onderzijde achtervleugel met twee rijen witte vlekken.'},
+ 'Lycaena phlaeas':{a:'Voorvleugel glanzend oranje met zwarte stippen en een brede grijsbruine rand. Achtervleugel grotendeels bruin met een oranje randband. Onderzijde achtervleugel grijsbruin.'},
+ 'Lycaena dispar':{a:'Groot. Onderzijde achtervleugel blauwgrijs met zwarte stippen en een oranje randband.',m:'Bovenzijde effen glanzend vuurrood met een smalle zwarte rand.',f:'Voorvleugel oranje met zwarte stippen, achtervleugel grotendeels donker.'},
+ 'Lycaena tityrus':{a:'Onderzijde grijsbeige met zwarte stippen en oranje randvlekjes.',m:'Bovenzijde bruin met zwarte stippen en alleen oranje randvlekjes.',f:'Voorvleugel veel oranje met zwarte stippen.'},
+ 'Lycaena virgaureae':{a:'Onderzijde okergeel met kleine witte vlekjes op de achtervleugel.',m:'Bovenzijde vurig oranjerood zonder stippen, met een smalle zwarte rand.',f:'Oranje met zwarte stippen.'},
+ 'Lycaena hippothoe':{a:'Onderzijde grijs met zwarte stippen en een oranje rand.',m:'Oranjerood met een paarse glans, vooral op de achtervleugel.',f:'Bruiner met oranje op de voorvleugel.'},
+ 'Callophrys rubi':{a:'De enige Nederlandse dagvlinder met een helder groene onderzijde, vaak met een rij witte stipjes. Zit bijna altijd met gesloten vleugels.'},
+ 'Thecla betulae':{a:'Onderzijde warm okeroranje met twee fijne witte lijnen en korte staartjes.',m:'Bovenzijde bruin met hooguit een vage lichte vlek.',f:'Bovenzijde met een brede oranje band op de voorvleugel.'},
+ 'Favonius quercus':{a:'Onderzijde lichtgrijs met een witte lijn en een oranje oogvlekje bij het staartje. Leeft hoog in eiken.',m:'Bovenzijde geheel paarsblauw glanzend.',f:'Bovenzijde zwart met alleen een paarsblauwe vlek aan de voorvleugelbasis.'},
+ 'Satyrium w-album':{a:'Onderzijde bruin met een witte lijn die op de achtervleugel een duidelijke W vormt, en een oranje band langs de rand. Staartjes.'},
+ 'Satyrium ilicis':{a:'Onderzijde bruin met een onderbroken witte lijn (meer stippen dan lijn, geen W) en losse oranje randvlekken die binnenwaarts zwart begrensd zijn.'},
+ 'Satyrium pruni':{a:'Onderzijde goudbruin met een doorlopende oranje band langs de achtervleugelrand, aan beide kanten begrensd door zwarte stippen.'},
+ 'Celastrina argiolus':{a:'Onderzijde licht zilverig blauwgrijs met kleine zwarte stipjes en streepjes, zonder oranje. Vliegt vroeg in het voorjaar en rond struiken en bomen.',m:'Bovenzijde hemelsblauw met een smalle zwarte rand.',f:'Blauw met een brede zwarte rand langs de voorvleugelpunt.'},
+ 'Cupido minimus':{a:'Heel klein. Bovenzijde donkerbruin (mannetje met wat blauwe bestuiving). Onderzijde lichtgrijs met kleine zwarte stipjes, zonder oranje.'},
+ 'Cupido argiades':{a:'Klein staartje aan de achtervleugel. Onderzijde lichtgrijs met kleine zwarte stippen en twee kleine oranje vlekjes bij het staartje.',m:'Bovenzijde violetblauw.',f:'Bovenzijde bruin, soms blauw bestoven.'},
+ 'Lampides boeticus':{a:'Onderzijde lichtbruin met veel fijne witte golflijnen en een brede witte band; staartje met twee zwarte oogvlekjes.',m:'Bovenzijde violetblauw.',f:'Bruin met blauw aan de basis.'},
+ 'Cacyreus marshalli':{a:'Klein, met staartje. Onderzijde grijsbruin met een wit gestreept patroon; bovenzijde bruin. Vaak op geraniums in tuinen.'},
+ 'Plebejus argus':{a:'Onderzijde met een rij zwarte randvlekken met blauwe of zilverige kern. Geen wortelvlekken op de onderzijde van de voorvleugel.',m:'Bovenzijde blauw met een brede zwarte rand.',f:'Bovenzijde bruin met oranje randvlekken, vooral op de achtervleugel.'},
+ 'Plebejus idas':{a:'Vrijwel gelijk aan het heideblauwtje; op een foto vaak niet met zekerheid te scheiden.',m:'Zwarte rand op de bovenzijde meestal smaller dan bij het heideblauwtje.',f:'Bruin met oranje randvlekken.'},
+ 'Plebejus argyrognomon':{a:'Lijkt sterk op vals heideblauwtje en heideblauwtje; onderzijde lichter met een brede oranje randband. Gebonden aan bont kroonkruid.',m:'Helder blauw met smalle zwarte rand.',f:'Bruin met oranje randvlekken.'},
+ 'Aricia agestis':{a:'Beide seksen bruin met opvallende oranje randvlekken op voor- én achtervleugel. Onderzijde zonder wortelvlekken op de voorvleugel. Op de onderzijde van de achtervleugel staan bij de voorrand twee stippen boven elkaar als een dubbele punt.'},
+ 'Polyommatus icarus':{a:'Onderzijde van de voorvleugel met één of twee wortelvlekken (zwarte stipjes dicht bij het lijf): het beste kenmerk. Oranje randvlekken op de onderzijde.',m:'Helder lichtblauw zonder zwarte rand, witte franje.',f:'Bruin met oranje randvlekken, vaak blauw bestoven aan de basis.'},
+ 'Cyaniris semiargus':{a:'Onderzijde grijsbruin zonder oranje, met één rij zwarte stippen in een witte ring.',m:'Bovenzijde donker violetblauw met een brede zwarte rand.',f:'Bovenzijde egaal donkerbruin.'},
+ 'Lysandra coridon':{a:'Onderzijde met oranje randvlekken; franje geblokt.',m:'Bleek zilver- of melkblauw met een donkere rand.',f:'Bruin met oranje randvlekken.'},
+ 'Lysandra bellargus':{a:'Franje wit met zwarte blokjes erdoorheen.',m:'Fel azuurblauw.',f:'Bruin met oranje randvlekken.'},
+ 'Phengaris alcon':{a:'Onderzijde grijsbruin zonder oranje, met zwarte stippen in een witte ring. Vliegt op vochtige heide met klokjesgentiaan.',m:'Bovenzijde dof lichtblauw met een smalle zwarte rand.',f:'Bruin, aan de basis blauw bestoven.'},
+ 'Phengaris teleius':{a:'Onderzijde lichtgrijs met twee rijen zwarte stippen in een witte ring. Bovenzijde blauw met een rij zwarte vlekken.'},
+ 'Phengaris nausithous':{a:'Onderzijde chocolade- of koffiebruin met één rij kleine zwarte stipjes.',m:'Donkerblauw met een brede zwarte rand.',f:'Bijna geheel donkerbruin.'},
+ 'Phengaris arion':{a:'Groot blauwtje met een rij langwerpige zwarte vlekken op de voorvleugel bovenzijde. Onderzijde grijs met veel zwarte stippen en een blauwgroene basis.'},
+ 'Limenitis populi':{a:'Zeer groot. Onderzijde oranje met blauwgrijze banden en witte vlekken.',m:'Bovenzijde zwart met een smalle, onderbroken witte band.',f:'Bovenzijde met een brede witte band.'},
+ 'Limenitis camilla':{a:'Bovenzijde zwart met een witte band en een witte vlek in de voorvleugel, zonder oogvlek of glans. Onderzijde roodbruin met een witte band en blauwgrijze basis. Zweeft veel.'},
+ 'Apatura iris':{a:'Witte band met op de achtervleugel een uitstekende tand naar buiten; één oogvlek op de achtervleugel bovenzijde. Onderzijde met een oogvlek op de voorvleugel.',m:'Paarsblauwe weerschijn op de bovenzijde.',f:'Bruin zonder weerschijn, groter.'},
+ 'Apatura ilia':{a:'Als de grote weerschijnvlinder, maar de witte (of oranje) band heeft geen tand, en er staat ook op de voorvleugel bovenzijde een oranje omrande oogvlek.',m:'Paarsblauwe weerschijn.',f:'Bruin zonder weerschijn.'},
+ 'Vanessa atalanta':{a:'Zwart met een rode band over de voorvleugel, een rode rand aan de achtervleugel en witte vlekken in de punt.'},
+ 'Vanessa cardui':{a:'Oranjeroze met zwarte vlekken en een zwarte voorvleugelpunt met witte vlekken. Onderzijde achtervleugel grijsbruin gemarmerd met een rij oogjes.'},
+ 'Aglais io':{a:'Grote oogvlek op elk van de vier vleugels. Onderzijde bijna zwart, als een dood blad.'},
+ 'Aglais urticae':{a:'Oranje met zwarte en gele vlekken langs de voorrand, een witte vlek bij de voorvleugelpunt en een rij blauwe maantjes langs de rand. Achtervleugel aan de basis zwart.'},
+ 'Nymphalis polychloros':{a:'Groter en doffer oranjebruin dan de kleine vos. Achtervleugel grotendeels oranje met een zwarte vlek aan de voorrand; geen witte vlek bij de vleugelpunt. Poten donker.'},
+ 'Nymphalis xanthomelas':{a:'Als de grote vos, maar helderder oranje, met lichte poten en een klein wit vlekje bij de voorvleugelpunt.'},
+ 'Nymphalis antiopa':{a:'Donker paarsbruin met een brede crèmegele rand en een rij blauwe vlekken daarbinnen.'},
+ 'Polygonia c-album':{a:'Sterk gekartelde vleugelranden. Onderzijde bruin als een blad, met een klein wit C-tekentje op de achtervleugel.'},
+ 'Araschnia levana':{a:'Onderzijde met een netwerk van witte lijnen, als een landkaart. Voorjaarsvorm oranje met zwarte vlekken; zomervorm zwart met een witte band en fijne oranje lijntjes.'},
+ 'Argynnis paphia':{a:'Grote parelmoervlinder. Onderzijde achtervleugel groenig met zilveren strepen in plaats van ronde vlekken.',m:'Vier dikke zwarte geurstrepen op de aders van de voorvleugel.',f:'Zonder geurstrepen, doffer; soms een groengrijze vorm (valesina).'},
+ 'Speyeria aglaja':{a:'Onderzijde achtervleugel met veel groen en ronde zilveren vlekken, maar zonder rij roodbruine oogjes.',m:'Helder oranje.',f:'Doffer, met meer donker aan de basis.'},
+ 'Fabriciana adippe':{a:'Onderzijde achtervleugel met zilveren vlekken en een rij roodbruine oogjes met zilveren kern.',m:'Met geurstrepen op twee aders van de voorvleugel.',f:'Zonder geurstrepen.'},
+ 'Fabriciana niobe':{a:'Onderzijde achtervleugel geelgroen met zwart afgezette aders en een klein zwart puntje bij de basis; zilveren vlekken soms vervangen door gele (vorm eris).',m:'Met geurstrepen op de aders.',f:'Zonder geurstrepen.'},
+ 'Issoria lathonia':{a:'Onderzijde achtervleugel met opvallend grote, spiegelende zilveren vlekken. Voorvleugel met een hoekige, ingesneden punt.'},
+ 'Brenthis ino':{a:'Middelgroot. Onderzijde achtervleugel geelachtig met een paarsig getinte buitenhelft en zonder zilver.'},
+ 'Boloria selene':{a:'Onderzijde achtervleugel met veel zilveren vlekken, een rij zwarte stippen en een zwarte stip in het midden.'},
+ 'Boloria euphrosyne':{a:'Onderzijde achtervleugel roodbruin met één grote zilveren vlek in het midden en zilveren randvlekken, verder weinig zilver.'},
+ 'Boloria aquilonaris':{a:'Kleine parelmoervlinder van hoogveen. Onderzijde achtervleugel roestbruin met parelmoerwitte vlekken die minder scherp begrensd zijn dan bij de zilveren maan.'},
+ 'Boloria dia':{a:'Klein. Onderzijde achtervleugel paarsbruin tot wijnrood met zilverachtige vlekken; voorhoek van de achtervleugel hoekig.'},
+ 'Melitaea cinxia':{a:'Onderzijde achtervleugel met oranje en crèmekleurige banden; in de oranje buitenband staat een rij zwarte stippen. Ook op de bovenzijde een rij zwarte stippen in de oranje band van de achtervleugel.'},
+ 'Melitaea athalia':{a:'Onderzijde achtervleugel met oranje en crèmekleurige banden, zonder zwarte stippen in de oranje band. Bovenzijde contrastrijk met een onregelmatig zwart netwerk.'},
+ 'Melitaea diamina':{a:'Bovenzijde veel donkerder, bijna zwart met kleine oranje vlekjes. Onderzijde met een oranje band met kleine zwarte stipjes.'},
+ 'Euphydryas aurinia':{a:'Bovenzijde bont geblokt in oranje, crème en bruin. Achtervleugel met een rij zwarte stippen in de oranje band, ook op de bovenzijde.'},
+ 'Pararge aegeria':{a:'Bruin met crèmegele vlekken, één oogvlek in de voorvleugelpunt en drie of vier op de achtervleugel. Zit graag in halfschaduw.'},
+ 'Lasiommata megera':{a:'Oranje met een zwart lijnenpatroon en een grote oogvlek in de voorvleugelpunt. Onderzijde achtervleugel grijs met een rij oogjes.',m:'Brede donkere geurstreep schuin over de voorvleugel.',f:'Zonder geurstreep, lichter.'},
+ 'Lasiommata maera':{a:'Groter en donkerder dan de argusvlinder; het oranje beperkt zich tot een veld rond de oogvlek, die vaak twee pupillen heeft.',m:'Met donkere geurstreep.',f:'Meer oranje op de voorvleugel.'},
+ 'Aphantopus hyperantus':{a:'Donker chocoladebruin. Onderzijde met gele ringen met een witte kern, ook op de voorvleugel. Geen oranje.'},
+ 'Maniola jurtina':{a:'Oogvlek in de voorvleugelpunt met één witte pupil. Onderzijde achtervleugel grijsbruin met een lichtere band, zonder witte stipjes.',m:'Bovenzijde vrijwel geheel bruin met een vage donkere geurstreep en weinig oranje.',f:'Grote oranje vlek op de voorvleugel bovenzijde.'},
+ 'Pyronia tithonus':{a:'Kleiner dan het bruin zandoogje. Oogvlek met twee witte pupillen; onderzijde achtervleugel met kleine witte stipjes. Bovenzijde oranje met een brede bruine rand.',m:'Donkere geurstreep over de voorvleugel.',f:'Zonder geurstreep, meer oranje.'},
+ 'Melanargia galathea':{a:'Zwart-wit geblokt als een dambord.',m:'Onderzijde witachtig grijs.',f:'Onderzijde geelbruin getint.'},
+ 'Coenonympha pamphilus':{a:'Klein en oranje met een klein oogje in de voorvleugelpunt. Onderzijde achtervleugel grijsbruin met een vage lichte band. Zit altijd met gesloten vleugels.'},
+ 'Coenonympha tullia':{a:'Groter en bleker dan het hooibeestje. Onderzijde achtervleugel grijs met een duidelijke witte band en vaak een rij kleine oogjes. Alleen op hoogveen.'},
+ 'Coenonympha arcania':{a:'Onderzijde achtervleugel met een brede witte band en een rij oogjes, waarvan er één binnen de witte band staat. Voorvleugel oranje.'},
+ 'Hipparchia semele':{a:'Onderzijde achtervleugel grijs gemarmerd als schutkleur, met een lichtere band. Voorvleugel onderzijde oranjegeel met twee oogvlekken die hij vaak wegstopt.',m:'Kleiner, donkerder, met een geurstreep.',f:'Groter, lichter en met meer oranje.'},
+ 'Hipparchia statilinus':{a:'Kleiner dan de heivlinder en grijzer, zonder oranje. Voorvleugel met twee oogjes met witte stipjes ertussen.',m:'Donkerder.',f:'Lichter, oogjes groter.'},
+ 'Minois dryas':{a:'Donkerbruin met twee grote oogvlekken met een blauwe pupil op de voorvleugel.',m:'Kleiner en donkerder.',f:'Groter en lichter bruin.'}
+};
+
+/* Gerichte tips voor soorten die vaak door elkaar worden gehaald */
+const TIPS = [
+ ['Polyommatus icarus','Aricia agestis','Kijk naar de onderzijde van de voorvleugel: het icarusblauwtje heeft wortelvlekken vlak bij het lijf, het bruin blauwtje niet. Het bruin blauwtje heeft bovendien op de achtervleugel onderzijde de "dubbele punt", en oranje randvlekken op voor- én achtervleugel bovenzijde.'],
+ ['Polyommatus icarus','Plebejus argus','Icarusblauwtje: wortelvlekken op de voorvleugel onderzijde en een mannetje zonder zwarte rand. Heideblauwtje: geen wortelvlekken, zilverblauwe kernen in de zwarte randvlekken en een mannetje met brede zwarte rand.'],
+ ['Plebejus argus','Plebejus idas','Op een foto vaak niet zeker te scheiden. Bij het mannetje is de zwarte rand van het vals heideblauwtje meestal smaller. Zekere determinatie gaat via de voorpoot van het mannetje (doorn bij het heideblauwtje) of via het gebied.'],
+ ['Plebejus argus','Aricia agestis','Heideblauwtje (vrouwtje): oranje vooral op de achtervleugel en zilverblauwe kernen in de randvlekken onderzijde. Bruin blauwtje: veel oranje ook op de voorvleugel en de "dubbele punt" op de achtervleugel onderzijde.'],
+ ['Polyommatus icarus','Celastrina argiolus','Het boomblauwtje heeft een lichtgrijze onderzijde met alleen zwarte stipjes en streepjes, zonder oranje. Het icarusblauwtje heeft oranje randvlekken en wortelvlekken.'],
+ ['Polyommatus icarus','Cyaniris semiargus','Klaverblauwtje: onderzijde zonder oranje, mannetje donker violetblauw met brede zwarte rand. Icarusblauwtje: oranje randvlekken en wortelvlekken.'],
+ ['Polyommatus icarus','Cupido argiades','Het staartblauwtje heeft een klein staartje en alleen twee kleine oranje vlekjes bij dat staartje, geen oranje randband.'],
+ ['Celastrina argiolus','Phengaris alcon','Beide zonder oranje. Boomblauwtje: klein, zilverig lichtgrijs met fijne zwarte streepjes. Gentiaanblauwtje: groter, bruingrijs met duidelijke wit omringde stippen, op vochtige heide.'],
+ ['Thymelicus sylvestris','Thymelicus lineola','Kijk naar de onderzijde van de sprietknop: oranjegeel bij het geelsprietdikkopje, zwart bij het zwartsprietdikkopje. Bij mannetjes is de geurstreep lang en schuin (geelspriet) of kort en recht (zwartspriet).'],
+ ['Ochlodes sylvanus','Thymelicus sylvestris','Het groot dikkopje heeft lichtere vlekken in een donkere rand en een gevlekte onderzijde. De sprietdikkopjes zijn effen oranje met een effen onderzijde.'],
+ ['Ochlodes sylvanus','Thymelicus lineola','Het groot dikkopje heeft lichtere vlekken in een donkere rand en een gevlekte onderzijde. De sprietdikkopjes zijn effen oranje met een effen onderzijde.'],
+ ['Ochlodes sylvanus','Hesperia comma','Beide met vlekken op de achtervleugel onderzijde. Bij de kommavlinder zijn ze scherp en zilverwit op olijfgroen, bij het groot dikkopje vaag en geelachtig.'],
+ ['Pyrgus malvae','Erynnis tages','Aardbeivlinder: geblokt met helderwitte vlekjes. Bruin dikkopje: grijsbruin gemarmerd zonder witte vlekken in het vleugelveld.'],
+ ['Pieris rapae','Pieris napi','Kijk naar de onderzijde van de achtervleugel: grijsgroen bestoven aders bij het klein geaderd witje, effen geelachtig bij het klein koolwitje.'],
+ ['Pieris rapae','Pieris brassicae','Het groot koolwitje is groter en de zwarte vleugelpunt loopt ver langs de buitenrand door. Bij het klein koolwitje is de punt klein en grijzig.'],
+ ['Pieris napi','Anthocharis cardamines','Het oranjetipje (ook het vrouwtje) heeft een groen-wit gemarmerde onderzijde. Bij het klein geaderd witje volgt het groen de aders.'],
+ ['Pieris rapae','Anthocharis cardamines','Het oranjetipje (ook het vrouwtje) heeft een groen-wit gemarmerde onderzijde en een zwarte middenstip op de voorvleugel.'],
+ ['Pieris brassicae','Anthocharis cardamines','Het oranjetipje (ook het vrouwtje) is kleiner en heeft een groen-wit gemarmerde onderzijde.'],
+ ['Gonepteryx rhamni','Pieris rapae','Het vrouwtje citroenvlinder heeft bladvormige, gepunte vleugels en geen enkele zwarte tekening.'],
+ ['Gonepteryx rhamni','Pieris napi','Het vrouwtje citroenvlinder heeft bladvormige, gepunte vleugels en geen enkele zwarte tekening.'],
+ ['Gonepteryx rhamni','Pieris brassicae','Het vrouwtje citroenvlinder heeft bladvormige, gepunte vleugels en geen enkele zwarte tekening.'],
+ ['Colias hyale','Colias alfacariensis','Vrijwel niet op een foto te onderscheiden. De zuidelijke luzernevlinder heeft een rondere voorvleugelpunt en een dieper oranje middenvlek op de achtervleugel bovenzijde.'],
+ ['Colias hyale','Colias crocea','De oranje luzernevlinder is aan de onderzijde warmer geelgroen en laat in de vlucht een oranje bovenzijde zien. De gele luzernevlinder is bleker geel.'],
+ ['Colias crocea','Gonepteryx rhamni','De citroenvlinder heeft gepunte, bladvormige vleugels zonder zwarte rand; de luzernevlinders hebben ronde vleugels en een wit, rood omrande middenvlek.'],
+ ['Maniola jurtina','Pyronia tithonus','Tel de pupillen in de oogvlek: één bij het bruin zandoogje, twee bij het oranje zandoogje. Het oranje zandoogje is ook kleiner en heeft witte stipjes op de achtervleugel onderzijde.'],
+ ['Maniola jurtina','Aphantopus hyperantus','Het koevinkje is donkerder en heeft duidelijke gele ringen met witte kern op de onderzijde, zonder oranje.'],
+ ['Coenonympha pamphilus','Coenonympha tullia','Het veenhooibeestje is groter en bleker en heeft een duidelijke witte band op de achtervleugel onderzijde. Het komt alleen op hoogveen voor.'],
+ ['Coenonympha pamphilus','Pyronia tithonus','Het hooibeestje is kleiner, zit altijd dicht en heeft een grijzige achtervleugel onderzijde zonder witte stipjes.'],
+ ['Pararge aegeria','Lasiommata megera','Het bont zandoogje is bruin met crèmegele vlekken, de argusvlinder oranje met zwarte lijntjes.'],
+ ['Aglais urticae','Nymphalis polychloros','Kleine vos: achtervleugel aan de basis zwart en een witte vlek bij de voorvleugelpunt. Grote vos: groter, doffer, achtervleugel grotendeels oranje en geen witte vlek.'],
+ ['Nymphalis polychloros','Nymphalis xanthomelas','De oostelijke vos is helderder, heeft lichte poten en een wit vlekje bij de voorvleugelpunt. De grote vos heeft donkere poten.'],
+ ['Apatura iris','Apatura ilia','Grote weerschijnvlinder: de witte band op de achtervleugel heeft een tand naar buiten en de voorvleugel bovenzijde heeft geen oranje omrande oogvlek. Kleine weerschijnvlinder: band zonder tand, wel die oogvlek.'],
+ ['Apatura iris','Limenitis camilla','De kleine ijsvogelvlinder heeft geen weerschijn en geen oogvlek op de achtervleugel bovenzijde, en is kleiner.'],
+ ['Limenitis camilla','Araschnia levana','De zomervorm van het landkaartje is kleiner, heeft fijne oranje lijntjes op de bovenzijde en een netwerk van witte lijnen op de onderzijde.'],
+ ['Limenitis camilla','Limenitis populi','De grote ijsvogelvlinder is veel groter en heeft een oranje onderzijde met blauwgrijze banden.'],
+ ['Argynnis paphia','Speyeria aglaja','Keizersmantel: zilveren strepen op de achtervleugel onderzijde. Grote parelmoervlinder: ronde zilveren vlekken.'],
+ ['Speyeria aglaja','Fabriciana niobe','De duinparelmoervlinder heeft zwart afgezette aders en een klein zwart puntje bij de basis van de achtervleugel onderzijde; de grote parelmoervlinder is groener en mist dat puntje.'],
+ ['Speyeria aglaja','Fabriciana adippe','De bosrandparelmoervlinder heeft een rij roodbruine oogjes met zilveren kern op de achtervleugel onderzijde; de grote parelmoervlinder niet.'],
+ ['Fabriciana niobe','Fabriciana adippe','Beide kunnen roodbruine oogjes hebben. De duinparelmoervlinder heeft zwart afgezette aders en een zwart puntje bij de basis van de achtervleugel onderzijde.'],
+ ['Issoria lathonia','Fabriciana niobe','De kleine parelmoervlinder heeft veel grotere, spiegelende zilveren vlekken en een hoekige voorvleugelpunt.'],
+ ['Boloria selene','Boloria euphrosyne','Zilveren maan: veel zilveren vlekken en een zwarte stip in het midden van de achtervleugel onderzijde. Parelmoervlinder: vooral één grote zilveren middenvlek.'],
+ ['Boloria selene','Boloria aquilonaris','De veenbesparelmoervlinder heeft een roestbruine onderzijde met minder scherp begrensde, parelmoerwitte vlekken en vliegt op hoogveen.'],
+ ['Melitaea cinxia','Melitaea athalia','Kijk naar de oranje buitenband op de achtervleugel onderzijde: met zwarte stippen bij de veldparelmoervlinder, zonder bij de bosparelmoervlinder.'],
+ ['Melitaea athalia','Melitaea diamina','De woudparelmoervlinder is veel donkerder, bijna zwart met kleine oranje vlekjes.'],
+ ['Melitaea cinxia','Euphydryas aurinia','De moerasparelmoervlinder is bonter geblokt in oranje, crème en bruin.'],
+ ['Lycaena phlaeas','Lycaena tityrus','De kleine vuurvlinder heeft een glanzend oranje voorvleugel met brede donkere rand. Het mannetje bruine vuurvlinder is bijna geheel bruin; het vrouwtje heeft een oranje voorvleugel zonder brede donkere rand.'],
+ ['Lycaena phlaeas','Lycaena dispar','De grote vuurvlinder is groter en heeft een blauwgrijze achtervleugel onderzijde met oranje randband.'],
+ ['Satyrium w-album','Satyrium ilicis','Iepenpage: witte lijn vormt een duidelijke W op de achtervleugel onderzijde. Bruine eikenpage: lijn onderbroken tot stippen, geen W.'],
+ ['Satyrium w-album','Satyrium pruni','Iepenpage: witte W-lijn. Pruimenpage: doorlopende oranje band aan beide kanten begrensd door zwarte stippen.'],
+ ['Satyrium ilicis','Satyrium pruni','Pruimenpage: doorlopende oranje band met aan beide kanten zwarte stippen. Bruine eikenpage: losse oranje vlekken, alleen binnenwaarts zwart begrensd.'],
+ ['Hipparchia semele','Hipparchia statilinus','De kleine heivlinder is kleiner, grijzer en mist het oranje op de voorvleugel.'],
+ ['Hipparchia semele','Minois dryas','De blauwoogvlinder heeft oogvlekken met een blauwe pupil en een donkerbruine, niet gemarmerde onderzijde.']
+];
+const tipIndex = {};
+for(const [a,b,t] of TIPS){ tipIndex[a+'|'+b]=t; tipIndex[b+'|'+a]=t; }
+const tipFor = (a,b)=>tipIndex[a+'|'+b]||null;
+const vsUrl = sp=>'https://vlinderstichting.nl/vlinder/'+(sp.vs||sp.nl.toLowerCase().replace(/\s+/g,'-'))+'/#herkenning';
+function kenBlock(sp,sex,compact){
+  const k=KEN[sp.sci]; const box=el('div',{class:'ken'});
+  if(!k){ box.append(el('p',{class:'muted'},'Nog geen kenmerken beschreven.')); }
+  else {
+    box.append(el('p',{},k.a));
+    const lines = sex ? [sex] : ['m','f'];
+    for(const s of lines) if(k[s]) box.append(el('p',{},el('strong',{},s==='m'?'♂ Mannetje: ':'♀ Vrouwtje: '),k[s]));
+  }
+  if(!compact) box.append(el('p',{class:'small'},el('a',{href:vsUrl(sp),target:'_blank',rel:'noopener'},'Herkenning bij De Vlinderstichting')));
+  return box;
+}
+function compareItem(sci,sex){
+  const items=(pools[sci]||[]).filter(it=>{ const e=eff(it); return !e.h&&!badImg.has(it.t); });
+  if(!items.length) return null;
+  const same=sex?items.filter(it=>eff(it).s===sex):[];
+  const pick=(same.length?same:items)[Math.floor(Math.random()*(same.length?same:items).length)];
+  return {it:pick,sameSex:!!(sex&&same.length)};
+}
+
 
 /* ---------- Helpers ---------- */
 const $ = s=>document.querySelector(s);
@@ -739,6 +925,32 @@ function finish(){
   $('#qscore').textContent=`${game.correct} goed`;
   renderReveal(allOk);
 }
+function learnBlock(){
+  const {sp,e}=game.cur; const chosen=game.chosen;
+  const wrap=el('section',{class:'learn'},el('h3',{},'Waar moet je op letten?'));
+  if(game.okSp){
+    wrap.append(el('p',{class:'tip'},`Dit is een ${e.s==='m'?'mannetje':'vrouwtje'}. Zo herken je de seksen van het ${sp.nl.toLowerCase()}:`), kenBlock(sp,null,false));
+    return wrap;
+  }
+  const other = chosen&&chosen.sci ? BY_SCI[chosen.sci] : null;
+  const tip = other ? tipFor(sp.sci,other.sci) : null;
+  if(tip) wrap.append(el('p',{class:'tip'},tip));
+  const cols=el('div',{class:'cmp'});
+  cols.append(el('div',{},el('h4',{},sp.nl,' ',el('span',{},'(juist)')), kenBlock(sp,e.s,false)));
+  if(other){
+    const c=compareItem(other.sci,e.s);
+    const col=el('div',{},el('h4',{},other.nl,' ',el('span',{},'(jouw keuze)')));
+    if(c){
+      const sx=eff(c.it).s;
+      col.append(el('figure',{},el('img',{src:fileUrl(c.it.t,480),alt:other.nl,loading:'lazy',onclick:()=>openLightbox(c.it.t)}),
+        el('figcaption',{},`Zo ziet ${other.nl.toLowerCase()} eruit${sx?` (${sx==='m'?'mannetje':'vrouwtje'})`:''}. Foto: ${c.it.a||'onbekend'}`)));
+    }
+    col.append(kenBlock(other,e.s,false));
+    cols.append(col);
+  }
+  wrap.append(cols);
+  return wrap;
+}
 function renderReveal(allOk){
   const {sp,it,e}=game.cur; const r=$('#reveal'); r.innerHTML=''; r.hidden=false;
   $('#badPhotoBtn').hidden=true; $('#undoNote').hidden=true;
@@ -764,6 +976,7 @@ function renderReveal(allOk){
   }
   drawFix();
   r.append(el('div',{class:'actions'},next,fixBtn),fixP);
+  if(!allOk) r.append(learnBlock());
   next.focus();
 }
 function endGame(){
@@ -851,6 +1064,7 @@ function renderDetail(){
     el('p',{class:'small'},el('a',{href:'https://commons.wikimedia.org/wiki/Category:'+encodeURIComponent(sp.sci.replace(/ /g,'_')),target:'_blank',rel:'noopener'},'Categorie op Wikimedia Commons'),' ',
       el('button',{class:'linkbtn small',type:'button',style:'margin-left:1rem',onclick:()=>{ showHidden=!showHidden; renderDetail(); }},showHidden?'Verborgen foto\'s niet tonen':'Verborgen foto\'s tonen'),
       el('button',{class:'linkbtn small',type:'button',style:'margin-left:1rem',onclick:async()=>{ LS.del(CACHE_V+sp.sci); delete pools[sp.sci]; renderDetail(); await loadSpecies(sp); onLoaded(sp); renderDetail(); renderSpeciesList(); }},'Opnieuw ophalen')));
+  box.append(el('section',{class:'learn'},el('h3',{},'Kenmerken'),kenBlock(sp,null,false)));
   const items=pools[sp.sci];
   if(!items){ box.append(el('p',{class:'muted'},'Foto\'s voor deze soort worden nog geladen.')); if(!loading.has(sp.sci)) loadAll([sp]); return; }
   if(!items.length){ box.append(el('p',{class:'muted'},'Geen foto\'s gevonden op Wikimedia Commons. Kies "Opnieuw ophalen" of controleer de wetenschappelijke naam in de soortenlijst.')); return; }
